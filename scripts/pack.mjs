@@ -21,10 +21,13 @@ const opt = (name, fallback) => { const i = args.indexOf(name); return i >= 0 ? 
 const source = resolve(opt('--source', process.env.TIDEMARK_SOURCE ?? '/Users/admin/Documents/Codex/writing/2026-11-12-steel-tide-tactics'))
 
 /** Folders the running game loads files from. Everything else in the source folder stays behind. */
-const KNOWN_DIRS = ['maps', 'i18n', 'fonts', 'cg', 'ui-assets', 'mods']
+// portraits/ and world/ hold pictures the game fetches one by one while it runs; index.html does not name them.
+const KNOWN_DIRS = ['maps', 'i18n', 'fonts', 'cg', 'ui-assets', 'mods', 'portraits', 'world']
 /** Parts of those folders that are working material, not loaded by the game. */
 const SKIP = [/(^|\/)src(\/|$)/, /(^|\/)\.DS_Store$/, /\.(bak|psd|map|sh|md)$/i, /\.bak\.[a-z]+$/i, /(^|\/)old(\/|$)/]
 const ROOT_FILES = /^(index\.html|favicon\.png|apple-touch-icon\.png|[\w-]+\.js)$/
+/** Scripts in the game folder that the running game no longer loads (the handbook and tools still use them). */
+const NOT_LOADED = ['portraits.js']
 
 if (!existsSync(join(source, 'index.html'))) { console.error(`No index.html in ${source}`); process.exit(1) }
 // The game is still growing: also take any folder index.html loads a file from.
@@ -55,7 +58,7 @@ mkdirSync(gameDir, { recursive: true })
 let files = 0, bytes = 0
 for (const name of readdirSync(source)) {
   const st = statSync(join(source, name))
-  if (st.isFile() && ROOT_FILES.test(name)) { cpSync(join(source, name), join(gameDir, name)); files++; bytes += st.size }
+  if (st.isFile() && ROOT_FILES.test(name) && !NOT_LOADED.includes(name)) { cpSync(join(source, name), join(gameDir, name)); files++; bytes += st.size }
 }
 for (const d of RUNTIME_DIRS) {
   if (!existsSync(join(source, d))) { if (d !== 'mods') console.warn(`warning: ${d}/ is missing in the source folder`); continue }
