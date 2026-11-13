@@ -31,7 +31,9 @@ if (!existsSync(join(source, 'index.html'))) { console.error(`No index.html in $
 const named = [...readFileSync(join(source, 'index.html'), 'utf8').matchAll(/<(?:script|link)[^>]+(?:src|href)="([^":]+)\/[^"]*"/g)].map(m => decodeURI(m[1]).split('/')[0])
 const RUNTIME_DIRS = [...new Set([...KNOWN_DIRS, ...named])].filter(d => KNOWN_DIRS.includes(d) ? true : existsSync(join(source, d)))
 
-const keep = rel => !SKIP.some(re => re.test(rel))
+/** Documents the game itself points players at. */
+const KEEP = ['mods/README.md']
+const keep = rel => KEEP.includes(rel) || !SKIP.some(re => re.test(rel))
 function copyTree(from, to, rel = '') {
   let n = 0, bytes = 0
   for (const name of readdirSync(join(from, rel))) {
@@ -87,8 +89,8 @@ if (flag('--no-manual')) {
 } else {
   const dir = join(source, 'handbook')
   const pages = existsSync(dir) ? readdirSync(dir).filter(f => /\.html$/i.test(f)) : []
-  // The handbook is being renamed: take the page with the game's current name when there are several.
-  const page = pages.find(f => f.includes('潮汐战线')) ?? pages.find(f => /tidemark/i.test(f)) ?? pages[0]
+  // The handbook has been renamed more than once: take the page changed most recently.
+  const page = pages.map(f => ({ f, t: statSync(join(dir, f)).mtimeMs })).sort((a, b) => b.t - a.t)[0]?.f
   if (!page) { console.error(`No handbook HTML in ${dir}. Use --no-manual to build without it.`); process.exit(1) }
   mkdirSync(manualDir, { recursive: true })
   cpSync(join(dir, page), join(manualDir, 'index.html'))
@@ -99,6 +101,12 @@ if (flag('--no-manual')) {
   console.log(`manual/  ${page} → index.html, ${(statSync(join(manualDir, 'index.html')).size / 1048576).toFixed(1)} MB`)
 }
 writeFileSync(join(root, 'game.json'), `${JSON.stringify(manifest, null, 2)}\n`)
+
+// The game's own version number (mods.js, AWMods.GAME_VERSION) is what extensions are matched against:
+// the package version must start with it.
+const gv = /GAME_VERSION\s*=\s*'([\d.]+)'/.exec(existsSync(join(gameDir, 'mods.js')) ? readFileSync(join(gameDir, 'mods.js'), 'utf8') : '')?.[1]
+const pv = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).version
+if (gv && !pv.startsWith(`${gv}.`)) { console.error(`error: the game says version ${gv} but package.json says ${pv}. Set package.json to ${gv}.0 (or ${gv}.<n>).`); process.exit(1) }
 
 // --- check against the store's rules, when the store repo sits beside this one
 const spec = resolve(root, '../dsh-game-store/lib/spec.mjs')

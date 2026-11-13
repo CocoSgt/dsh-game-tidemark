@@ -1,4 +1,4 @@
-# Tidemark (潮汐战线)
+# Tidemark (潮汐前线)
 
 [中文](README.zh-CN.md)
 

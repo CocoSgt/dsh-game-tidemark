@@ -3,7 +3,7 @@
   "id": "tidemark",
   "name": {
     "en": "Tidemark",
-    "zh": "潮汐战线"
+    "zh": "潮汐前线"
   },
   "tagline": {
     "en": "Where the tide leaves its mark.",
@@ -70,6 +70,23 @@
     "notes": {
       "en": "Cartoon war between pixel-art armies. No blood.",
       "zh": "像素风格的卡通战争，没有血腥画面。"
+    }
+  },
+  "workshop": {
+    "types": [
+      "map",
+      "language",
+      "commander",
+      "balance"
+    ],
+    "mount": "game/mods",
+    "list": {
+      "path": "game/mods/mods.js",
+      "template": "window.AWModList = {{ids}};"
+    },
+    "guide": {
+      "en": "An extension is a folder with a mod.js that calls AWMods.register. The fields are in game/mods/README.md.",
+      "zh": "一个扩展是一个文件夹，里面的 mod.js 调用 AWMods.register。字段见 game/mods/README.md。"
     }
   }
 }
