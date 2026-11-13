@@ -8,7 +8,7 @@ The rules are easy to learn: units counter each other, terrain decides attack an
 - **Four nations, 29 commanders**: each nation has its own commanders and technology. A commander with a full meter can use a power that turns a battle in one turn.
 - **A campaign in six acts**: one full story, mission after mission, with cutscenes.
 - **24 skirmish maps** for 2 to 4 sides. Each side is a player or the computer, and sides can form alliances.
-- **Fog of war**: switch it on and you see only what your units see. Scouting and ambushes start to matter.
+- **Fog of war**: on by default in free play; you see only what your units see. Scouting and ambushes start to matter.
 - **Research**: put part of your income into technology and your late-game army outclasses the enemy's.
 - **Codex**: look up every unit, terrain and commander at any time, with who counters whom.
 

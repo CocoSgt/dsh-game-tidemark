@@ -17,10 +17,11 @@
   ];
 
   // 第二种资源。玩家看得到的名字都集中在这里，别处的说明文字引用它，改名只改这一处。
-  // mine_：矿的产出 { every: 每几回合, amount: 产出几份, cap: 每个阵营最多算几座 }，现成的说明文字在 mineText；shardGain：拾取一处碎片堆得到多少；boostPts：投入一份换多少研究点（乘地图系数）；boostMax：每回合最多投入几份
-  D.RES = { name: '陨星碎片', short: '碎片', mine: '陨星矿', shard: '碎片堆', pit: '碎片坑', mine_: { every: 2, amount: 1, cap: 3 }, shardGain: 5, boostPts: 30, boostMax: 2, atk: 0.2, def: 0.2, heal: 10, repair: 10, move: 1 };
+  // mine_：矿的产出 { every: 每几回合, amount: 产出几份, cap: 每个阵营最多算几座, total: 每座矿一共能产出几份（产完只给资金；剩余量见 C.mineLeft） }，现成的说明文字在 mineText；shardGain：拾取一处碎片堆得到多少；boostPts：投入一份换多少研究点（乘地图系数）；boostMax：每回合最多投入几份
+  D.RES = { name: '陨星碎片', short: '碎片', mine: '陨星矿', shard: '碎片堆', pit: '碎片坑', mine_: { every: 3, amount: 1, cap: 2, total: 3 }, shardGain: 5, boostPts: 30, boostMax: 2, atk: 0.2, def: 0.2, heal: 10, repair: 10, move: 1 };
+  // 强化价写在每个兵种的 ore 上（1–5，按造价和战场价值分档），也是强化的“档”：攻防加成只对强化价不高于自己的敌方单位生效（core.js 的 oreVs）。
   // 强化建造的效果：有武器的单位攻击 +atk、防御 +def；没有武器的单位防御 +def，另按用途加——医护兵每回合治疗量 +heal（内部 HP，10 = 1 点），维修车每回合修理量 +repair，运输单位移动力 +move
-  D.RES.mineText = '每 ' + D.RES.mine_.every + ' 回合产出 ' + D.RES.mine_.amount + ' 份' + D.RES.name + '（每个阵营最多计 ' + D.RES.mine_.cap + ' 座）'; // 界面、图鉴直接用这一句，别自己拿数字拼
+  D.RES.mineText = '每 ' + D.RES.mine_.every + ' 回合产出 ' + D.RES.mine_.amount + ' 份' + D.RES.name + '（每个阵营最多计 ' + D.RES.mine_.cap + ' 座），每座一共可产出 ' + D.RES.mine_.total + ' 份'; // 界面、图鉴直接用这一句，别自己拿数字拼
   D.TERRAIN = {
     plain: { name: '平原', def: 1 },
     forest: { name: '森林', def: 2, note: '迷雾开启时，森林中的单位只有相邻时才会被发现。' },
@@ -89,8 +90,8 @@
     bik: { name: '摩托兵', cost: 250, ore: 1, move: 5, vision: 3, mt: 'tread', range: [1, 1], cap: true, from: 'factory', desc: '乘坐摩托车的步兵，可占领建筑，移动力高，适合占领远处的建筑。不可进入山地。' },
     rec: { name: '侦察车', cost: 400, ore: 2, move: 8, vision: 5, mt: 'wheel', range: [1, 1], from: 'factory', desc: '陆上单位中移动力最高，擅长攻击步兵类单位和无掩护的火炮，不敌坦克。' },
     tnk: { name: '轻型坦克', cost: 700, ore: 2, move: 6, vision: 3, mt: 'tread', range: [1, 1], from: 'factory', desc: '陆上主力，造价较低，攻击与防御均衡。' },
-    med: { name: '中型坦克', cost: 1200, ore: 2, move: 5, vision: 3, mt: 'tread', range: [1, 1], from: 'factory', desc: '攻击与防御高于轻型坦克，造价适中。' },
-    hvy: { name: '重型坦克', cost: 1800, ore: 3, move: 4, vision: 2, mt: 'tread', range: [1, 1], from: 'factory', desc: '陆上单位中攻击与防御最高，造价高，移动力低。' },
+    med: { name: '中型坦克', cost: 1200, ore: 3, move: 5, vision: 3, mt: 'tread', range: [1, 1], from: 'factory', desc: '攻击与防御高于轻型坦克，造价适中。' },
+    hvy: { name: '重型坦克', cost: 1800, ore: 4, move: 4, vision: 2, mt: 'tread', range: [1, 1], from: 'factory', desc: '陆上单位中攻击与防御最高，造价高，移动力低。' },
     art: { name: '自行火炮', cost: 600, ore: 2, move: 5, vision: 2, mt: 'tread', range: [2, 3], from: 'factory', desc: '射程 2–3，可攻击舰船。移动后不可攻击，不可攻击相邻的敌方单位。' },
     rkt: { name: '火箭炮', cost: 1100, ore: 3, move: 5, vision: 1, mt: 'wheel', range: [3, 5], from: 'factory', desc: '射程 3–5，射程长于自行火炮，擅长攻击重型车辆。移动后不可攻击。' },
     aa: { name: '防空车', cost: 800, ore: 2, move: 6, vision: 3, mt: 'tread', range: [1, 1], from: 'factory', desc: '射程 1，擅长攻击航空单位，对步兵类单位伤害也较高。' },
@@ -98,25 +99,25 @@
     rep: { name: '维修车', cost: 500, ore: 2, move: 6, vision: 1, mt: 'tread', range: null, from: 'factory', desc: '无武装。相邻的己方车辆、航空单位、舰船每回合恢复 1 HP（无需支付资金）。' },
     apc: { name: '运兵车', cost: 500, ore: 2, move: 6, vision: 1, mt: 'tread', range: null, carry: { n: 2, kind: 'foot' }, from: 'factory', desc: '无武装。可搭载 2 个徒步的步兵类单位（摩托兵除外），运送至前线后卸载。' },
     // 空军
-    cop: { name: '武装直升机', cost: 900, ore: 2, move: 6, vision: 3, mt: 'air', air: true, range: [1, 1], from: 'airport', desc: '移动不受地形影响，擅长攻击陆上单位，不敌防空车。' },
+    cop: { name: '武装直升机', cost: 900, ore: 3, move: 6, vision: 3, mt: 'air', air: true, range: [1, 1], from: 'airport', desc: '移动不受地形影响，擅长攻击陆上单位，不敌防空车。' },
     tcp: { name: '运输直升机', cost: 500, ore: 2, move: 6, vision: 3, mt: 'air', air: true, range: null, carry: { n: 1, kind: 'foot' }, from: 'airport', desc: '无武装。可搭载 1 个徒步的步兵类单位（摩托兵除外），飞越山地与海洋。' },
-    atk: { name: '攻击机', cost: 1500, ore: 3, move: 7, vision: 4, mt: 'air', air: true, range: [1, 1], from: 'airport', desc: '可攻击陆上单位和直升机，造价低于轰炸机。' },
-    bmb: { name: '轰炸机', cost: 2200, ore: 4, move: 7, vision: 4, mt: 'air', air: true, range: [1, 1], from: 'airport', desc: '对陆上单位和舰船伤害极高，不可攻击航空单位。' },
-    ftr: { name: '战斗机', cost: 1800, ore: 3, move: 9, vision: 5, mt: 'air', air: true, range: [1, 1], from: 'airport', desc: '只能攻击航空单位，用于争夺制空权。' },
+    atk: { name: '攻击机', cost: 1500, ore: 4, move: 7, vision: 4, mt: 'air', air: true, range: [1, 1], from: 'airport', desc: '可攻击陆上单位和直升机，造价低于轰炸机。' },
+    bmb: { name: '轰炸机', cost: 2200, ore: 5, move: 7, vision: 4, mt: 'air', air: true, range: [1, 1], from: 'airport', desc: '对陆上单位和舰船伤害极高，不可攻击航空单位。' },
+    ftr: { name: '战斗机', cost: 1800, ore: 4, move: 9, vision: 5, mt: 'air', air: true, range: [1, 1], from: 'airport', desc: '只能攻击航空单位，用于争夺制空权。' },
     // 海军
     gbt: { name: '炮艇', cost: 600, ore: 2, move: 7, vision: 3, mt: 'ship', ship: true, range: [1, 1], from: 'port', desc: '造价低廉的小型舰船，可攻击岸边的陆上单位，擅长攻击登陆艇。' },
-    dst: { name: '驱逐舰', cost: 1400, ore: 2, move: 6, vision: 3, mt: 'ship', ship: true, range: [1, 1], from: 'port', desc: '兼具防空与反潜能力，擅长攻击潜艇和航空单位。' },
+    dst: { name: '驱逐舰', cost: 1400, ore: 3, move: 6, vision: 3, mt: 'ship', ship: true, range: [1, 1], from: 'port', desc: '兼具防空与反潜能力，擅长攻击潜艇和航空单位。' },
     sub: { name: '潜艇', cost: 1200, ore: 3, move: 5, vision: 5, mt: 'ship', ship: true, range: [1, 1], from: 'port', desc: '只能攻击舰船，擅长攻击战列舰。航空单位和战列舰不可攻击潜艇。不敌驱逐舰。' },
-    bsh: { name: '战列舰', cost: 2200, ore: 4, move: 5, vision: 2, mt: 'ship', ship: true, range: [2, 6], from: 'port', desc: '射程 2–6，可攻击陆上单位和舰船，伤害较高。移动后不可攻击。' },
+    bsh: { name: '战列舰', cost: 2200, ore: 5, move: 5, vision: 2, mt: 'ship', ship: true, range: [2, 6], from: 'port', desc: '射程 2–6，可攻击陆上单位和舰船，伤害较高。移动后不可攻击。' },
     // 装甲列车：只走道路、桥梁和建筑格（mt: 'rail'）；射程 1–3，移动后只能打相邻的目标（moveShot）；能装 2 个步兵类；only：只有这个阵营能造
-    trn: { name: '装甲列车', cost: 2800, ore: 4, move: 9, vision: 3, mt: 'rail', range: [1, 3], moveShot: { range: [1, 1] }, carry: { n: 2, kind: 'foot' }, from: 'factory', only: 5, desc: '只能在道路、桥梁和建筑上移动。射程 1–3，移动后只能攻击相邻目标。可搭载 2 个徒步的步兵类单位（摩托兵除外）。攻击与防御介于中型坦克和重型坦克之间。' },
+    trn: { name: '装甲列车', cost: 2800, ore: 5, move: 9, vision: 3, mt: 'rail', range: [1, 3], moveShot: { range: [1, 1] }, carry: { n: 2, kind: 'foot' }, from: 'factory', only: 5, desc: '只能在道路、桥梁和建筑上移动。射程 1–3，移动后只能攻击相邻目标。可搭载 2 个徒步的步兵类单位（摩托兵除外）。攻击与防御介于中型坦克和重型坦克之间。' },
     // ── 黑潮的精锐兵种（faction: 5：只有扮演黑潮的席位造得出来；四国的普通兵种黑潮照常能造）。比对应的普通兵种贵、强，各带一个特色 ──
     // after：攻击后还能再移动几格（不能再打、不能占领）；cloak：true = 不相邻就看不见（不开迷雾也算），'idle' = 上一个自己的回合没开过火时才这样
     bgd: { name: '黑甲兵', cost: 300, ore: 2, move: 3, vision: 2, mt: 'foot', range: [1, 1], cap: true, from: 'factory', faction: 5, desc: '黑潮阵营的重装步兵，可占领建筑。对步兵类单位和轻型车辆的伤害高于步兵，受到坦克的伤害明显低于步兵。' },
-    bht: { name: '深渊战车', cost: 2600, ore: 3, move: 5, vision: 2, mt: 'tread', range: [1, 1], after: 1, from: 'factory', faction: 5, desc: '黑潮阵营的重型坦克，攻击和防御都高于重型坦克。攻击后可再移动 1 格（不可再次攻击）。' },
-    btc: { name: '潮汐炮', cost: 2000, ore: 3, move: 4, vision: 1, mt: 'tread', range: [3, 7], from: 'factory', faction: 5, desc: '射程 3–7 的远程单位，伤害略高于火箭炮。移动后不可攻击。' },
-    bnv: { name: '夜鸦', cost: 2600, ore: 3, move: 9, vision: 4, mt: 'air', air: true, range: [1, 1], cloak: true, from: 'airport', faction: 5, desc: '隐形的航空单位：敌方只有相邻时才能发现（迷雾关闭时也有效）。对航空单位伤害高，对陆上单位伤害中等。' },
-    bds: { name: '潜渊舰', cost: 3000, ore: 4, move: 5, vision: 3, mt: 'ship', ship: true, range: [2, 5], cloak: 'idle', from: 'port', faction: 5, desc: '射程 2–5 的舰船，移动后不可攻击。上一个己方回合没有攻击时处于下潜状态：敌方只有相邻时才能发现（迷雾关闭时也有效）。' },
+    bht: { name: '深渊战车', cost: 2600, ore: 5, move: 5, vision: 2, mt: 'tread', range: [1, 1], after: 1, from: 'factory', faction: 5, desc: '黑潮阵营的重型坦克，攻击和防御都高于重型坦克。攻击后可再移动 1 格（不可再次攻击）。' },
+    btc: { name: '潮汐炮', cost: 2000, ore: 4, move: 4, vision: 1, mt: 'tread', range: [3, 7], from: 'factory', faction: 5, desc: '射程 3–7 的远程单位，伤害略高于火箭炮。移动后不可攻击。' },
+    bnv: { name: '夜鸦', cost: 2600, ore: 5, move: 9, vision: 4, mt: 'air', air: true, range: [1, 1], cloak: true, from: 'airport', faction: 5, desc: '隐形的航空单位：敌方只有相邻时才能发现（迷雾关闭时也有效）。对航空单位伤害高，对陆上单位伤害中等。' },
+    bds: { name: '潜渊舰', cost: 3000, ore: 5, move: 5, vision: 3, mt: 'ship', ship: true, range: [2, 5], cloak: 'idle', from: 'port', faction: 5, desc: '射程 2–5 的舰船，移动后不可攻击。上一个己方回合没有攻击时处于下潜状态：敌方只有相邻时才能发现（迷雾关闭时也有效）。' },
     lnd: { name: '登陆艇', cost: 1000, ore: 2, move: 6, vision: 1, mt: 'ship', ship: true, range: null, carry: { n: 2, kind: 'ground' }, from: 'port', desc: '无武装。可搭载 2 个陆上单位，靠岸后卸载。' },
   };
 
@@ -325,7 +326,7 @@
       passive: '己方城市也可以生产步兵类单位。步兵类单位造价 −20%、攻击 +10%。', good: ['inf', 'mech', 'bik', 'snp', 'grn', 'flm'], bad: ['tnk', 'med', 'hvy'],
       mods: [{ on: 'inf', cost: -0.2, atk: 0.1 }], rules: { cityBuild: ['inf', 'mech', 'snp', 'grn', 'flm', 'mdc', 'bik'] },
       fx: { sell: 0.9, ai: 'sell' } },
-    // ── 黑潮（阵营 5，战役专用）。新规则键：regenAt { 地形: 每回合恢复 }、seeOn [地形]（迷雾下这些地形上的敌方单位始终可见，潜艇除外）、killBonus 击毁返还造价的几成、
+    // ── 黑潮（阵营 5，战役专用）。新规则键：regenAt { 地形: 每回合恢复 }、seeOn [地形]（迷雾下这些地形上的敌方单位只要在视野范围内就可见，礁石的隐蔽无效；潜艇除外）、killBonus 击毁返还造价的几成、
     //    roadRun 回合开始时在道路、桥梁上的车辆本回合移动力加几、offRoad { on, atk } 不在道路、桥梁、建筑上时的攻击增减、hideProp 位于建筑时隐蔽的兵种类别
     //    新技能效果：surge 涨水一级、ebb 压制敌方舰船、buyout 收购、chill.road 敌方在道路和桥梁上的移动消耗增加、frame 让两家敌方互相打（fxAlt：只有一家敌方时换成这一组效果）
     { id: 'abyss', name: '玄渊', title: '井长', group: '奇策', faction: 5, power: '开闸', desc: '打开大闸，涨水一级。与海洋相邻的沙滩、荒地、礁石、废墟变为海洋。位于这些格子的陆上单位被移到最近的空格，其中敌方单位损失 3 HP（不会被击毁）。己方下回合开始前：全军防御 +20%。每局最多涨水 2 次。不能涨水时，改为所有敌方单位各损失 1 HP（不会被击毁）。',
@@ -333,7 +334,7 @@
       mods: [{ on: 'all', defOn: { mine: 0.2, waste: 0.2, ruins: 0.2 } }, { on: ['tnk', 'med', 'hvy', 'bht', 'trn'], atk: 0.15 }], rules: { regenAt: { mine: 10, waste: 10, ruins: 10 }, mineBonus: 0.5 },
       fx: { surge: { dmg: 30, max: 2, fallback: 10 }, def: [{ on: 'all', v: 0.2 }], ai: 'endturn' } },
     { id: 'moon', name: '玄朔', title: '算潮', group: '专精', faction: 5, power: '大潮', desc: '本回合：全军攻击 +20%（舰船 +40%）、移动力 +2。己方下回合开始前：敌方舰船移动力 −3（最低 1），不能在港口修理。',
-      passive: '舰船攻击 +20%、移动力 +1。远程单位攻击 +15%。己方单位在沙滩上的移动消耗为 1。迷雾开启时，海洋、沙滩、礁石上的敌方单位始终可见（潜艇除外）。', good: ['bsh', 'dst', 'gbt', 'lnd', 'inf'], bad: ['hvy', 'rkt'],
+      passive: '舰船攻击 +20%、移动力 +1。远程单位攻击 +15%。己方单位在沙滩上的移动消耗为 1。迷雾开启时，视野范围内海洋、沙滩、礁石上的敌方单位都可见，礁石的隐蔽对其无效（潜艇除外）。', good: ['bsh', 'dst', 'gbt', 'lnd', 'inf'], bad: ['hvy', 'rkt'],
       mods: [{ on: 'ship', atk: 0.2, move: 1 }, { on: 'indirect', atk: 0.15 }], rules: { seeOn: ['sea', 'beach', 'reef'], flatOn: { all: ['beach'] } },
       fx: { ebb: { move: -3, noRepair: true }, atk: [{ on: 'ship', v: 0.2 }, { on: 'all', v: 0.2 }], move: [{ on: 'all', v: 2 }], ai: 'attack' } },
     { id: 'coin', name: '玄铢', title: '掌柜', group: '奇策', faction: 5, power: '收购', desc: '买下与己方单位相邻的敌方车辆，最多 2 个，从价格高的开始买。买下的单位立即归己方所有，当回合不能行动。价格 = 造价 × 剩余 HP ÷ 10 × 50%。资金不够支付的单位不会买下。以下单位不能买：带标记的单位、搭载着单位的运输单位、位于司令部的单位、敌方阵营的最后一个单位。一个单位都没有买下时，改为获得回合收入的 50%。',

@@ -845,13 +845,19 @@
   function oreAdd(s, p, n) { if (!s.ore) s.ore = [0]; while (s.ore.length <= nP(s)) s.ore.push(0); s.ore[p] += n; }
   // 强化建造这个兵种要多少（不受指挥官折扣影响；没开这种资源时是 0）。常规建造一律不要
   C.oreOf = function (s, p, type) { return oreOn(s) ? D.UNITS[type].ore || 0 : 0; };
+  // 强化的攻防加成只对“强化价不高于自己”的敌方单位生效：便宜的单位强化了也只压得住同级和更低级的对手，去打贵的单位没有加成。
+  // a：强化的单位；otherType：对面的兵种（不知道对面是谁时不给加成）
+  const oreTier = type => (D.UNITS[type] && D.UNITS[type].ore) || 0;
+  const oreVs = (a, otherType) => !!(a.ore && otherType && oreTier(otherType) <= oreTier(a.type));
+  C.oreApplies = function (u, otherType) { return oreVs(u, otherType); };
   // 强化建造给这个兵种什么：[{ kind: 'atk' | 'def' | 'heal' | 'repair' | 'move', value, text }]。text 是给玩家看的短句。
   // 有武器的：攻击、防御；没有武器的：防御，再按用途加（医护兵治疗量、维修车修理量、运输单位移动力）。界面的兵种卡、详情卡、图鉴都按它显示
   C.oreEffects = function (type) {
     const U = D.UNITS[type], R = D.RES, out = [], pct = v => Math.round(v * 100);
     if (!U || !R) return out;
-    if (U.range) out.push({ kind: 'atk', value: R.atk, text: tr('攻击 +{n}%', { n: pct(R.atk) }) });
-    out.push({ kind: 'def', value: R.def, text: tr('防御 +{n}%', { n: pct(R.def) }) });
+    const k = U.ore || 0; // 攻防加成只对强化价不高于 k 的敌方单位生效（见 oreVs）
+    if (U.range) out.push({ kind: 'atk', value: R.atk, vs: k, text: tr('攻击 +{n}%（敌方强化价不高于 {k} 时）', { n: pct(R.atk), k }) });
+    out.push({ kind: 'def', value: R.def, vs: k, text: tr('防御 +{n}%（敌方强化价不高于 {k} 时）', { n: pct(R.def), k }) });
     if (type === 'mdc') out.push({ kind: 'heal', value: R.heal / 10, text: tr('每回合治疗量 +{n}', { n: R.heal / 10 }) });
     if (type === 'rep') out.push({ kind: 'repair', value: R.repair / 10, text: tr('每回合修理量 +{n}', { n: R.repair / 10 }) });
     if (!U.range && U.carry) out.push({ kind: 'move', value: R.move, text: tr('移动力 +{n}', { n: R.move }) });
@@ -871,16 +877,37 @@
     }
     return '';
   };
-  // 回合开始：每座己方的矿产出一份
+  // 一座陨星矿还能产出几份（不是矿 = null）。每座矿一共只能产出 D.RES.mine_.total 份，产完后只提供资金。
+  // 剩余量记在 s.mineLeft[格子编号]，没记过的按满额算
+  C.mineLeft = function (s, x, y) {
+    if (!s.map.t[y] || s.map.t[y][x] !== 'mine') return null;
+    const T = D.RES.mine_.total, k = y * s.map.w + x;
+    if (!T) return Infinity;
+    return s.mineLeft && s.mineLeft[k] != null ? s.mineLeft[k] : T;
+  };
+  // 回合开始：己方的矿产出
   function oreTurnStart(s, p) {
     if (!oreOn(s)) return;
-    // 每座矿每 D.RES.mine_.every 回合产出 amount 份（零头记在 s.oreFrac 里攒着），每家最多算 cap 座
-    const R = D.RES.mine_, mines = Math.min(R.cap || Infinity, C.count(s, p, 'mine'));
+    // 每座矿每 D.RES.mine_.every 回合产出 amount 份（零头记在 s.oreFrac 里攒着），每家最多算 cap 座；产完的矿不算
+    const R = D.RES.mine_, m = s.map, live = [];
+    for (let y = 0; y < m.h; y++) for (let x = 0; x < m.w; x++) if (m.t[y][x] === 'mine' && m.owner[y][x] === p && C.mineLeft(s, x, y) > 0) live.push([x, y]);
+    const mines = Math.min(R.cap || Infinity, live.length);
     if (!mines) return;
     const fr = s.oreFrac || (s.oreFrac = [0]);
     while (fr.length <= nP(s)) fr.push(0); // 不留空位：存档往返后要逐字段相同
-    const acc = (fr[p] || 0) + mines * R.amount / R.every, n = Math.floor(acc + 1e-9);
+    const acc = (fr[p] || 0) + mines * R.amount / R.every;
+    let n = Math.floor(acc + 1e-9);
     fr[p] = acc - n;
+    if (R.total) { // 从剩得最多的矿里扣（一样多时按格子顺序），扣不出来的就不产
+      let got = 0;
+      for (let i = 0; i < n; i++) {
+        let best = null, bl = 0;
+        for (const [x, y] of live) { const l = C.mineLeft(s, x, y); if (l > bl) { bl = l; best = [x, y]; } }
+        if (!best) break;
+        (s.mineLeft || (s.mineLeft = {}))[best[1] * m.w + best[0]] = bl - 1; got++;
+      }
+      n = got;
+    }
     if (n > 0) { oreAdd(s, p, n); s.events.push({ type: 'ore', player: p, amount: n, total: s.ore[p] }); }
   }
   // 陆上单位停在碎块上：拾取，这一格变成荒地。返回拾到多少（0 = 没有）
@@ -1090,8 +1117,8 @@
     const m = s.map, w = m.w, h = m.h, sub = u.type === 'sub', fog = fogOn(s);
     // 隐蔽：开迷雾时人人适用；没开迷雾时只有潜行指挥官的单位适用。没开迷雾而对方开着灯火管制：它的单位一律贴身才看得见
     const rlU = ruleOf(s, u.owner);
-    // 算潮（rules.seeOn）：迷雾下，这些地形上的敌方单位对带这条规则的阵营（和队友）始终可见，潜艇除外
-    if (fog && !sub) { const so = seeOnOf(s, st, teamOf(s, p)); if (so && so.includes(m.t[u.y][u.x])) return true; }
+    // 算潮（rules.seeOn）：迷雾下，这些地形上的敌方单位只要在己方（和队友）的视野范围内就可见，礁石的隐蔽对它无效；视野外照样看不见。潜艇除外
+    if (fog && !sub) { const so = seeOnOf(s, st, teamOf(s, p)); if (so && so.includes(m.t[u.y][u.x])) return teamVision(s, st, teamOf(s, p))[u.y * w + u.x] === 1; }
     const hp = rlU.hideProp && !D.UNITS[u.type].air && D.TERRAIN[m.t[u.y][u.x]].prop && inCls(rlU.hideProp, u.type, D.UNITS[u.type]); // 点灯人：位于建筑的这类单位隐蔽，不开迷雾也算
     const UK = D.UNITS[u.type].cloak, ck = UK === true || (UK === 'idle' && !u.shot); // 隐形的兵种（夜鸦；潜渊舰没开过火时）：不相邻就看不见，不开迷雾也算
     const cloak = fog || rlU.stealth || hp || ck;
@@ -1159,6 +1186,46 @@
   C.visibleUnits = function (s, p) {
     if (!veilOn(s)) return s.units.slice();
     return atOrigin(s, () => { const st = visState(s); return s.units.filter(u => canSeeIn(s, st, p, u)); });
+  };
+  // ── 看得见单位的格子（界面画迷雾用；只读，不改规则，判断全走 canSeeIn）──
+  // 一格算“看得见”：假设每个敌对阵营各有一个普通地面单位（步兵；不隐形、不是潜艇）站在这一格，p 都看得见它。
+  // 所以开迷雾时，视野里但没有己方单位贴着的森林、礁石、废墟（以及对手藏兵、点灯人这类规则加上的隐蔽地形）不算看得见；
+  // 视野半径、山地、雷达塔都不能看穿隐蔽地形，喷火兵、算潮这类规则照核心原样生效。
+  // 这一格上已经站着 p 看得见的单位（自己的、队友的、看得见的敌人）也算看得见。隐形兵种和潜艇另有规则，不按它们算。
+  // lim：只算 lim 里为 1 的格子（单个单位版用）。
+  function seeFill(s, st, p, out, lim) {
+    const w = s.map.w, n = w * s.map.h, foes = [];
+    for (let q = 1, N = nP(s); q <= N; q++) if (aliveP(s, q) && C.isEnemy(s, p, q)) foes.push(q);
+    const pr = { type: 'inf', owner: 0, x: 0, y: 0, hp: 100, shot: false };
+    for (let i = 0; i < n; i++) {
+      if (lim && !lim[i]) continue;
+      pr.x = i % w; pr.y = (i - pr.x) / w;
+      let ok = 1;
+      for (const q of foes) { pr.owner = q; if (!canSeeIn(s, st, p, pr)) { ok = 0; break; } }
+      out[i] = ok;
+    }
+    for (const o of s.units) { const i = o.y * w + o.x; if ((!lim || lim[i]) && (!C.isEnemy(s, p, o.owner) || canSeeIn(s, st, p, o))) out[i] = 1; }
+    return out;
+  }
+  // p 在每一格看不看得见单位：Uint8Array，下标 y*w+x。没有“看不见的单位”（C.veilOn 为假）时全是 1。
+  // 和视野共用一份缓存（单位、建筑、指挥官、技能、科技变了才重算）。只读，别改返回的数组
+  C.seeCells = function (s, p) {
+    const n = s.map.w * s.map.h;
+    if (!veilOn(s)) { if (ONES.length !== n) ONES = new Uint8Array(n).fill(1); return ONES; }
+    return atOrigin(s, () => {
+      const st = visState(s), c = st.see || (st.see = {});
+      return c[p] || (c[p] = seeFill(s, st, p, new Uint8Array(n), null));
+    });
+  };
+  // 单个单位版：只靠 u 自己（视野半径 = C.unitMods 的 vision、贴身才看得见隐蔽地形），按它现在的坐标算。
+  // 没有“看不见的单位”时就是视野半径的菱形。每次调用都新算一张
+  C.unitSeeCells = function (s, u) {
+    const w = s.map.w, h = s.map.h, n = w * h, dia = new Uint8Array(n);
+    paint(dia, w, h, u.x, u.y, unitSight(s, u));
+    if (!veilOn(s) || u.owner <= 0) return dia;
+    const occ = new Array(n); occ[u.y * w + u.x] = u;
+    const st = { vis: { [teamOf(s, u.owner)]: dia }, occ };
+    return seeFill(s, st, u.owner, new Uint8Array(n), dia);
   };
   // 迷雾下真正移动前过一遍：路径上撞到看不见的敌对单位，就停在它前面最近的能停的格子，本回合行动结束
   C.resolveMove = function (s, u, path) { return atOrigin(s, () => resolveMove0(s, u, path)); };
@@ -1522,7 +1589,7 @@
     const aura = auraAtk(s, a); // 雷达塔：只管范围内的己方单位，几座重叠也只算一次
     const A = D.UNITS[a.type], Dd = dType ? D.UNITS[dType] : null, ma = modOf(s, a.owner, a.type);
     const fxA = fxOf(s, a.owner), rA = ruleOf(s, a.owner);
-    let atk = 1 + aura + 0.05 * a.stars + ma.atk + fxSum(fxA.atk, a.type, A) + (a.ore ? D.RES.atk : 0); // a.ore：强化建造的单位
+    let atk = 1 + aura + 0.05 * a.stars + ma.atk + fxSum(fxA.atk, a.type, A) + (oreVs(a, dType) ? D.RES.atk : 0); // 强化建造的单位：只对强化价不高于自己的目标加攻击
     if (!counter && rA.atkInit && !(rA.initWaive && d && C.dispHp(d) < C.dispHp(a))) atk += rA.atkInit; // 补拳：打 HP 比自己低的不吃这个惩罚
     if (counter) atk += ma.counterAtk; // 反击时的攻击增减（mods 的 counterAtk 字段）
     if (Dd && ma.vs) for (const cls in ma.vs) if (inCls(cls, dType, Dd)) atk += ma.vs[cls]; // 对某一类目标的攻击增减（mods 的 vs 字段）
@@ -1558,12 +1625,13 @@
     return atk;
   }
   // 防守方的防御系数（0–0.9）。cover：进攻方把地形防御算几成（投弹手 0.5、喷火兵 0、其余 1）
-  function defFrac(s, d, cover, pierce) {
+  // aType：进攻方的兵种（强化的防御加成看它；不传 = 不看进攻方，不含强化加成）
+  function defFrac(s, d, cover, pierce, aType) {
     const Dd = D.UNITS[d.type], md = modOf(s, d.owner, d.type), fxD = fxOf(s, d.owner), rD = ruleOf(s, d.owner);
     const dTerr = s.map.t[d.y][d.x], tStars = Dd.air ? 0 : Math.max(0, D.TERRAIN[dTerr].def - (pierce || 0));
     const def = 0.1 * tStars * cover * (rD.fullCover ? 10 : C.dispHp(d)) / 10 + 0.05 * d.stars + md.def + // rules.fullCover：地形防御不随 HP 下降
       (d.ran && rD.ranDef ? rD.ranDef : 0) + // 掉头：打完又走开的单位
-      (d.ore ? D.RES.def : 0) + // 强化建造的单位
+      (oreVs(d, aType) ? D.RES.def : 0) + // 强化建造的单位：只在进攻方强化价不高于自己时加防御
       (rD.fleet && Dd.ship && ownNear(s, d.owner, d.x, d.y, d, isShipU) ? rD.fleet.def : 0) +
       (md.hold && tStars >= 2 ? md.hold : 0) +
       (md.defOn && !Dd.air ? (md.defOn[dTerr] || 0) + (D.TERRAIN[dTerr].prop ? md.defOn.prop || 0 : 0) : 0) +
@@ -1584,7 +1652,7 @@
     // 运气是直接加在伤害上的。普通的 0–9 照加；超过 9 的部分（金不换的大运气）按伤害表折算：伤害表 50 只算一半，伤害表 2 几乎不算。
     // 不这样的话，本来打不动的组合（狙击手打重型坦克，伤害表 2）掷出 +40、+83 就能打掉大半条命
     const lk = luck > LUCK[1] ? LUCK[1] + (luck - LUCK[1]) * Math.min(100, base) / 100 : luck;
-    const dmg = (base * atkMul(s, a, d.type, counter, d) + lk) * (ahEff / 10) * (1 - defFrac(s, d, cover, pierce));
+    const dmg = (base * atkMul(s, a, d.type, counter, d) + lk) * (ahEff / 10) * (1 - defFrac(s, d, cover, pierce, a.type));
     return Math.max(0, Math.min(d.hp, Math.floor(dmg)));
   };
   // 这个单位站在现在这一格、在现在这个回合的实际修正（指挥官常驻、阵营底色、技能、地形、军衔、雷达塔全算上）。界面的信息面板只用它
@@ -1592,7 +1660,7 @@
     const U = D.UNITS[u.type], r4 = v => Math.round(v * 10000) / 10000, m = modOf(s, u.owner, u.type), rl = ruleOf(s, u.owner);
     const rg = C.rangeOf(s, u), terr = s.map.t[u.y][u.x], stars = U.air ? 0 : D.TERRAIN[terr].def, sight = unitSight(s, u), mp = C.movePts(s, u);
     return {
-      atk: U.range ? r4(atkMul(s, u, null, false) - 1) : 0, // 主动进攻时的攻击增减合计（0.3 = +30%）；不含只对某类目标生效的 vs
+      atk: U.range ? r4(atkMul(s, u, null, false) - 1) : 0, // 主动进攻时的攻击增减合计（0.3 = +30%）；不含只对某类目标生效的 vs和强化（强化只对强化价不高于自己的对手生效，见 C.oreEffects）
       counterAtk: U.range ? r4(atkMul(s, u, null, true) - 1) : 0, // 反击时的（和 atk 的差别只在 rules.atkInit）
       vs: m.vs, // { 目标类别: 攻击增减 } 或 null
       def: r4(defFrac(s, u, 1)), // 防御合计（0–0.9）：地形 + 军衔 + 指挥官 + 技能。投弹手、喷火兵打它时地形那部分要打折，见 C.damage
@@ -2963,7 +3031,7 @@
     aheadRatio: 1.3, aheadDay: 5, crushRatio: 2.5, crushDay: 12, // 兵力是对手的多少倍、第几天以后算“占优”
     decapR: 3, decapVal: 500, decapTurns: 3, decapW: 9, decapDays: 2, // 斩首：敌方司令部周围几格内兵力不到多少、己方步兵类几回合内能到，就直取司令部
     softCover: 40, dangerSoft: 0.35, coverUnitW: 0.35, coverUnitBase: 1.2, flmNear: 12, // 投弹手、喷火兵、狙击手：更爱站掩体、更怕挨打；对面躲在掩体里的步兵越多越值得造
-    holdCover: 0, auraW: 40, shardW: 1500, oreKeep: 4, oreWant: 4, oreUnit: 1100, oreSpare: 3, oreIdle: 4, oreWorth: 1.3, eliteW: 1.35, eliteFoot: 0.6, rpCap: 5, buyMin: 200, planW: 8, planMine: 1.5, planOre: 1.5, planProd: 1, planTower: 0.5, planLab: 0.7, planGoal: 3, planFoe: 1.5,
+    holdCover: 0, auraW: 40, shardW: 1500, oreKeep: 6, oreWant: 4, oreCore: 3, oreSpare: 5, oreIdle: 8, oreWorth: 1.3, eliteW: 1.35, eliteFoot: 0.6, rpCap: 5, buyMin: 200, planW: 8, planMine: 1.5, planOre: 1.5, planProd: 1, planTower: 0.5, planLab: 0.7, planGoal: 3, planFoe: 1.5,
     noise: 8, buildLo: 0.7, buildHi: 1.3, styleOn: true, footMax: 6, footLate: 3, focusKill: 0.15, killBonus: 0.3,
     freshFrac: 0.6, stormMin: 3, richPer: 1200, richMin: 1,
     waitDng: 0, comboW: 0, comboMax: 4, comboNeed: 0.95, comboLoss: 1500, // 高手的集火：凑得出击杀的目标加多少分（× 目标造价）、最多几个人凑、伤害要凑够目标 HP 的几成、为凑击杀最多亏多少
@@ -3640,10 +3708,10 @@
     const saving = !easy && !threatened && s.day - mem.saved !== 1 && dream > bs * A.saveRatio && funds + income >= dreamCost;
     if (saving) mem.saved = s.day; // 下回合能买到明显更好的，先攒着
     if (bk && !saving) {
-      // 强化建造：新手不用。贵的、要上前线的兵种（造价不低于 A.oreUnit）够就强化；别的要手里有富余才强化
+      // 强化建造：新手不用。强化的加成只对强化价不高于自己的敌人生效，所以只有主力（强化价不低于 A.oreCore）够就强化；
+      // 强化价 2 的有武器兵种要手里比强化价多 A.oreSpare 份；步兵类和没有武器的兵种（医护兵、维修车、运输单位）要多 A.oreIdle 份，基本不强化
       const oc = C.oreOf(s, p, bk), have = oreHave(s, p), K = D.UNITS[bk];
-      // 没有武器的兵种（医护兵、维修车、运输单位）排在最后：手里比强化价多 A.oreIdle 份以上才强化
-      const strong = !easy && oc > 0 && have >= oc && (K.range ? K.cost >= A.oreUnit || have >= oc + A.oreSpare : have >= oc + A.oreIdle);
+      const strong = !easy && oc > 0 && have >= oc && (K.range && oc >= A.oreCore || have >= oc + (K.range && oc >= 2 ? A.oreSpare : A.oreIdle));
       return strong ? { type: 'build', x: bsite[0], y: bsite[1], unit: bk, ore: true } : { type: 'build', x: bsite[0], y: bsite[1], unit: bk };
     }
     if (fac.length && foot < footWant && funds >= cInf) {

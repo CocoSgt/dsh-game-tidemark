@@ -72,7 +72,8 @@
   const AILV = [['', '默认'], ['easy', '简单'], ['normal', '普通'], ['hard', '困难']];
   const opt = {
     map: 0, ctl: [null, 'human', 'ai', 'ai', 'ai'], cos: [null, 'blitz', 'rand', 'rand', 'rand'], teams: [0, 1, 2, 3, 4],
-    rules: { fog: false, startFunds: 0, income: INC, powers: true, dayLimit: 0, aiLevel: 'normal' }, ai: [null, '', '', '', ''],
+    // 自由对局默认开战争迷雾（存过偏好的按 steel-tide.rules 里的；战役各关用关卡自己的 rules，不走这里）
+    rules: { fog: true, startFunds: 0, income: INC, powers: true, dayLimit: 0, aiLevel: 'normal' }, ai: [null, '', '', '', ''],
   };
   for (const k of ['coPassives', 'handicap', 'loot', 'tech', 'ore']) if (typeof RDEF[k] === 'boolean') opt.rules[k] = RDEF[k];
   try {
@@ -486,8 +487,8 @@
     ctx.fillStyle = 'rgba(20,22,28,.6)'; ctx.fillRect(0, 0, cv.width, cv.height);
   }
   function showTitle() {
-    gid++; unstage(); S = null; mode = 'title'; closeOverlays(); Nav.stack = []; if (Camp) Camp.abort();
-    sel = reach = reachMask = inspect = anim = movePath = loadTr = joinTr = null; fx = []; ghosts = []; plays.clear(); mapCvs = []; warmMap = null; apron = null; visMask = null; quiet = false;
+    gid++; unstage(); holdReset(); S = null; mode = 'title'; closeOverlays(); Nav.stack = []; if (Camp) Camp.abort();
+    sel = reach = reachMask = inspect = anim = movePath = loadTr = joinTr = null; fx = []; ghosts = []; plays.clear(); mapCvs = []; warmMap = null; apron = null; visMask = seeMask = null; quiet = false;
     fcast = null; loadingOn = false; HUD.clear();
     if (!mapOk(D.MAPS[opt.map]) || D.MAPS[opt.map].campaign) { const i = D.MAPS.findIndex(m => !m.campaign && mapOk(m)); if (i >= 0) opt.map = i; } // 默认选中的那张图开不了（文件还在改）：换第一张开得了的
     selectMap(opt.map, true);
@@ -496,7 +497,7 @@
   }
   function enterGame() {
     gid++; fx = []; ghosts = []; plays.clear(); sprLog.last.clear(); sel = reach = reachMask = inspect = anim = camAnim = shakeFx = movePath = loadTr = joinTr = null; camX = camY = 0; lastCurKey = ''; quiet = false; preview(false);
-    fcast = null; HUD.clear(); quit.clear(); gaveUp = 0;
+    fcast = null; HUD.clear(); quit.clear(); gaveUp = 0; holdReset();
     if (lsGet('steel-tide.fast') == null) cfg.fast = S.map.w * S.map.h >= 4000; // 没设过“电脑加速”：64×64 的大图默认开
     mapCvs = []; warmMap = null; mapDirty = false; mapSig = sigOf(); snapMap(); seenLog = (S.log && S.log.length) || 0; aliveWas = plist().map(isAlive);
     closeOverlays(); Nav.stack = [];
@@ -851,6 +852,9 @@
 
   // ───────── 战争迷雾：给谁看、看得见哪些格子 ─────────
   let visMask = null, visP = 0, lastHuman = 0;
+  // seeMask：核心 C.seeCells 给的“这一格有敌方单位看不看得见”（视野里没有己方单位贴着的森林、礁石、废墟等为 0）。
+  // 只在 refreshVis（回合开始、单位动了、状态变了）和 revealAt 里取，不每帧算。画迷雾时视野外和这里为 0 的格子都压灰
+  let seeMask = null;
   // 预演期间（单位已经摆到终点、行动还没定）的可见性由核心统一处理：C.setPreview 之后 C.canSee / C.vision / C.targets / C.unloadSpots 都按出发格算
   // 两件事分开问：darkOn = 开没开战争迷雾（画不画暗格、显不显示视野数值）；fogOn = 现在有没有“看不见的单位”（要不要按 C.canSee 过滤单位、
   // 走 C.resolveMove）。后者听核心的 C.veilOn：没开迷雾时，潜行的指挥官、灯火管制也会让单位看不见；核心没有这个函数就等同于前者
@@ -864,10 +868,11 @@
     return cfg.spec >= 1 && cfg.spec <= NP() ? cfg.spec : 0;
   }
   function refreshVis() {
-    visMask = null; visP = 0;
+    visMask = null; seeMask = null; visP = 0;
     if (!fogOn()) return;
     const p = viewer(); if (!p) return;
     try { visMask = Uint8Array.from(C.vision(S, p)); visP = p; } catch (e) { console.error(e); visMask = null; }
+    if (visMask && darkOn() && C.seeCells) { try { seeMask = Uint8Array.from(C.seeCells(S, p)); } catch (e) { console.error(e); seeMask = null; } }
     miniDirty = true;
   }
   const seen = (x, y) => !visMask || visMask[y * S.map.w + x] === 1;
@@ -881,7 +886,10 @@
   function revealAt(q, x, y) {
     if (!visMask || isEnemy(visP, q.owner)) return;
     const kx = q.x, ky = q.y;
-    try { q.x = x; q.y = y; const v = C.vision(S, visP); for (let i = 0; i < v.length; i++) if (v[i]) visMask[i] = 1; } catch (e) { } finally { q.x = kx; q.y = ky; }
+    try {
+      q.x = x; q.y = y; const v = C.vision(S, visP); for (let i = 0; i < v.length; i++) if (v[i]) visMask[i] = 1;
+      if (seeMask) { const sv = C.seeCells(S, visP); for (let i = 0; i < sv.length; i++) if (sv[i]) seeMask[i] = 1; }
+    } catch (e) { } finally { q.x = kx; q.y = ky; }
     miniDirty = true;
   }
   // 迷雾遮罩的一格：按八个方向的邻格是否可见，靠近可见格的那一侧从透明渐变到全盖。
@@ -904,13 +912,17 @@
     }
     g.putImageData(img, 0, 0); fogTiles.set(key, c); return c;
   }
+  // 这一格画不画迷雾：视野外，或者视野里但藏得住敌人（seeMask 为 0）
+  const lit = i => visMask[i] === 1 && (!seeMask || seeMask[i] === 1);
   function drawFog(v) {
     if (!visMask) return;
-    const w = S.map.w, h = S.map.h, vis = (x, y) => x >= 0 && y >= 0 && x < w && y < h && visMask[y * w + x] === 1;
+    const w = S.map.w, h = S.map.h, vis = (x, y) => x >= 0 && y >= 0 && x < w && y < h && lit(y * w + x);
     ctx.globalAlpha = FOG_A;
     for (let y = v.y0; y <= v.y1; y++) for (let x = v.x0; x <= v.x1; x++) {
-      if (visMask[y * w + x]) continue;
-      const key = (vis(x, y - 1) ? 1 : 0) | (vis(x + 1, y) ? 2 : 0) | (vis(x, y + 1) ? 4 : 0) | (vis(x - 1, y) ? 8 : 0) |
+      const i = y * w + x;
+      if (lit(i)) continue;
+      // 视野里藏得住敌人的格子（森林等）整格压灰、不留渐变边，和视野外的迷雾同一个颜色
+      const key = visMask[i] ? 0 : (vis(x, y - 1) ? 1 : 0) | (vis(x + 1, y) ? 2 : 0) | (vis(x, y + 1) ? 4 : 0) | (vis(x - 1, y) ? 8 : 0) |
         (vis(x - 1, y - 1) ? 16 : 0) | (vis(x + 1, y - 1) ? 32 : 0) | (vis(x + 1, y + 1) ? 64 : 0) | (vis(x - 1, y + 1) ? 128 : 0);
       at(x, y); ctx.drawImage(fogTile(key), 0, 0);
     }
@@ -1195,9 +1207,11 @@
       }
     }
     if (hitSet && mode === 'move') drawZone(v, (x, y) => inb(x, y) && hitSet.has(y * w + x), '255,72,56', 0.2);
-    if (inspect) {
-      drawZone(v, (x, y) => inb(x, y) && inspect.mv[y * w + x] === 1, '70,150,255', 0.22);   // 蓝：它能走到的格子
-      drawZone(v, (x, y) => inb(x, y) && inspect.at[y * w + x] === 1, '255,72,56', 0.16);    // 红：它能打到的格子（远程不能移动后开火的只算原地）
+    if (peek && !S.units.includes(peek.u)) peek = null;   // 查看的单位没了（被击毁、装进运输单位）
+    const insp = peek || inspect;                          // 按住查看的那个单位优先；没有就是“范围常显”的那个
+    if (insp) {
+      drawZone(v, (x, y) => inb(x, y) && insp.mv[y * w + x] === 1, '70,150,255', 0.22);   // 蓝：它能走到的格子
+      drawZone(v, (x, y) => inb(x, y) && insp.at[y * w + x] === 1, '255,72,56', 0.16);    // 红：它能打到的格子（远程不能移动后开火的只算原地）
     }
     if (mode === 'target') drawList(v, targets.map(t => [t.x, t.y]), 'attack');
     if (mode === 'unload') drawList(v, spots, 'unload');
@@ -1213,6 +1227,8 @@
           at(q[0], q[1]); fxDraw('pathSeg', k ? dirOf(q, p[k - 1]) : null, k < p.length - 1 ? dirOf(q, p[k + 1]) : null, k === p.length - 1);
         }
       }
+      // 直接点目标、要先移动才打得到：落点那一格再描一圈亮框，看清会停在哪儿再确认
+      if (aim && aim.moves) { const sx = aim.stand[0], sy = aim.stand[1]; drawZone(v, (x, y) => x === sx && y === sy, '255,243,196', 0.3); }
     }
     // 单位：只画视野内、看得见的。单位比格子大一圈，所以按行从上到下画（下面一行的盖住上面一行的），同一行里飞机压在最上面；
     // 正在移动的单位按它此刻所在的行排
@@ -1229,6 +1245,7 @@
     drawGoalMarks(v, now);
     drawReticles(v, now);
     drawFog(v);
+    drawSight(v, insp);   // 它的视野：视野外压暗、边缘一圈虚线
 
     // 光标
     if (mode !== 'over') {
@@ -1313,6 +1330,8 @@
       techIdle: techMark(), ai: !human[p] && !S.winner, demo: DEMO, tag: (NP() > 2 || hasTeams()) ? teamTag(p) : '',
       others: NP() > 2 ? plist().filter(q => q !== p && isAlive(q)).map(q => ({ p: q, funds: S.funds[q] || 0 })) : [] };   // 多方对局：其余阵营的资金（细条上是徽记 + 数字）
   }
+  // 运输单位里装着的单位，逐个列出来（信息条、详情卡、卸载菜单共用）：HP 和场上单位一样用显示 HP
+  const cargoOf = q => ((q && q.cargo) || []).map(c => ({ type: c.type, owner: c.owner || q.owner, name: D.UNITS[c.type].name, hp: C.dispHp(c), stars: c.stars || 0, ore: !!c.ore }));
   // 光标所在格的内容：地形、防御星、归属；有看得见的单位时再加一行
   function infoModel() {
     const m = S.map, t = m.t[cur.y][cur.x], T = D.TERRAIN[t], q = unitAtV(cur.x, cur.y), cap = m.cap[cur.y][cur.x];
@@ -1328,10 +1347,14 @@
       unit = { type: q.type, owner: q.owner, name: D.UNITS[q.type].name, hp: C.dispHp(q), stars: q.stars || 0, cargo: q.cargo.length, moved: !!q.moved, fired: !!q.fired, again: canAgain(q),
         vision: darkOn() ? ((M && M.vision) || D.UNITS[q.type].vision || 0) : 0, left: q.fired && !q.moved && M ? M.move : null, tags, buff };
       try { if (cap < 20 && C.canCapture(S, q)) capBy = capPow(q); } catch (e) { }
+      unit.cargoList = cargoOf(q);   // 搭载的每个单位（兵种、HP、军衔、强化）：看得见这个运输单位就看得见里面装了什么，核心对乘客没有另外的隐藏规则
       unit.aura = auraText(q); unit.ore = !!q.ore; unit.auraNames = auraNames(q); unit.veil = veilOf(q) === 'dive' ? tt('下潜') : veilOf(q) ? tt('隐蔽') : '';
     }
     // capBy：占着这一格的单位下次占领会扣多少占领值（C.capPower，指挥官可能有倍数）
-    return { t, name: T.name, def: T.def, tip: t === 'shard' && D.RES ? T.note || '' : '', tipShort: t === 'shard' && D.RES ? tt('可拾取 {n} 份{name}', { n: D.RES.shardGain, name: D.RES.name }) : '', prop: !!T.prop, owner: m.owner[cur.y][cur.x], cap: cap < 20 && q ? cap : null, capBy, unit };
+    // 陨星矿：还剩几份（C.mineLeft；每座矿的储量有限，产完只给资金）
+    let mineTip = '';
+    if (t === 'mine' && D.RES && C.mineLeft && !(S.rules && S.rules.ore === false)) { const left = C.mineLeft(S, cur.x, cur.y); if (left != null && left !== Infinity) mineTip = left > 0 ? tt('剩余 {n} 份{name}', { n: left, name: D.RES.name }) : tt('已采完'); }
+    return { t, name: T.name, def: T.def, tip: t === 'shard' && D.RES ? T.note || '' : mineTip, tipShort: t === 'shard' && D.RES ? tt('可拾取 {n} 份{name}', { n: D.RES.shardGain, name: D.RES.name }) : mineTip, prop: !!T.prop, owner: m.owner[cur.y][cur.x], cap: cap < 20 && q ? cap : null, capBy, unit };
   }
   // ── 小地图：默认收成右下角一个图标；按 N、点图标展开。地图明显比一屏大时默认展开 ──
   let miniK = 3, miniBase = null, miniDirty = true, miniPref = lsGet('steel-tide.mini'), miniKey = '', miniCv = null, miniDown = false;
@@ -1358,7 +1381,7 @@
       if (miniDirty || !miniBase || miniBase.width !== cw) {
         miniBase = document.createElement('canvas'); miniBase.width = cw; miniBase.height = chh;
         const bg2 = miniBase.getContext('2d'); paintBlocks(bg2, m, kp);
-        if (visMask) { bg2.fillStyle = 'rgba(20,22,28,.55)'; for (let yy = 0; yy < m.h; yy++) for (let xx = 0; xx < m.w; xx++) if (!visMask[yy * m.w + xx]) bg2.fillRect(xx * kp, yy * kp, kp, kp); }
+        if (visMask) { bg2.fillStyle = 'rgba(20,22,28,.55)'; for (let yy = 0; yy < m.h; yy++) for (let xx = 0; xx < m.w; xx++) if (!lit(yy * m.w + xx)) bg2.fillRect(xx * kp, yy * kp, kp, kp); }
         miniDirty = false;
       }
       g.setTransform(1, 0, 0, 1, 0, 0); g.imageSmoothingEnabled = false; g.drawImage(miniBase, 0, 0);
@@ -1411,16 +1434,16 @@
   function battleHints() {
     if (!S || mode === 'over' || mode === 'title' || curtain) return [];
     if (mode === 'ai' || mode === 'anim') return human[S.turn] ? [] : [['', DEMO ? '演示对局' : '电脑行动中…']];
-    if (mode === 'move') return [['a', aim ? '移动并攻击' : '移动至此'], ['b', '取消'], ['x', '详情']];   // 光标压在打得到的敌人身上：确定 = 走过去打
+    if (mode === 'move') return [['a', aim ? (aim.moves ? '移动并攻击' : '攻击') : '移动至此'], ['b', '取消'], ['x', '详情']];   // 光标压在打得到的敌人身上：确定 = 原地打，或走过去打
     if (mode === 'target') return [['a', '攻击'], ['b', '返回'], ['lr', '切换目标']];
     if (mode === 'unload') return [['a', '卸载至此'], ['b', '返回'], ['lr', '切换位置']];
     if (mode === 'silo') return [['a', '发射'], ['b', '返回'], ['dpad', '选择目标']];
-    if (mode === 'inspect') return [['b', '关闭范围显示'], ['x', '详情']];
+    if (mode === 'inspect') return [['b', '关闭范围和视野显示'], ['x', '详情']];
     if (mode !== 'idle') return [];
     const q = unitAtV(cur.x, cur.y), mine = q && q.owner === S.turn && !q.moved;
     let fac = false; try { fac = !q && S.map.owner[cur.y][cur.x] === S.turn && C.buildList(S, cur.x, cur.y).length > 0; } catch (e) { }
-    const menuA = !mine && !q && !fac, a = mine ? '选择' : q ? '查看范围' : fac ? '生产' : '菜单';   // 同一条提示里不出现两个相同的说明：A 已经是“菜单”时不再列 Y，A 是“看范围”时不再列 B
-    return [['a', a], q && mine && ['b', '查看范围'], ['x', '详情'], !menuA && ['y', '菜单'], ['lbrb', '切换单位']];
+    const menuA = !mine && !q && !fac, a = mine ? '选择' : q ? '查看范围和视野' : fac ? '生产' : '菜单';   // 同一条提示里不出现两个相同的说明：A 已经是“菜单”时不再列 Y，A 是“看范围”时不再列 B
+    return [['a', a], q && ['b', '按住：查看范围和视野'], ['x', '详情'], !menuA && ['y', '菜单'], ['lbrb', '切换单位']];
   }
   function drawHud(now) {
     if (curtain) { HUD.frame(null); Kit.setHints([]); return; }
@@ -1441,7 +1464,7 @@
     if (Kit.ptr()) {
       // 鼠标：右下角一个“菜单”按钮；触屏再加“结束回合”“详情”。选路、选目标时给“取消 / 返回”
       const mine = human[S.turn] && !S.winner, touch = Kit.dev === 'touch';
-      Kit.setHints(mode === 'idle' && mine ? [undoOf() && ['undo', '撤回'], ['y', '菜单'], touch && ['end', '结束回合'], touch && ['x', '详情']] : mode === 'move' ? [['b', '取消']] : pick ? [touch && ['a', mode === 'target' ? '攻击' : mode === 'silo' ? '发射' : '卸载至此'], ['b', '返回']] : mode === 'inspect' ? [['b', '关闭范围显示']] : []);
+      Kit.setHints(mode === 'idle' && mine ? [unitAtV(cur.x, cur.y) && ['', touch ? '长按单位：查看范围和视野' : '按住右键：查看范围和视野'], undoOf() && ['undo', '撤回'], ['y', '菜单'], touch && ['end', '结束回合'], touch && ['x', '详情']] : mode === 'move' ? [['b', '取消']] : pick ? [touch && ['a', mode === 'target' ? '攻击' : mode === 'silo' ? '发射' : '卸载至此'], ['b', '返回']] : mode === 'inspect' ? [['b', '关闭范围和视野显示']] : []);
     } else Kit.setHints(pick || cfg.hints || now < hintUntil ? battleHints() : undoOf() ? [['undo', '撤回']] : []);   // 有能撤回的事：角上一个“撤回”的提示，做了下一个动作就消失
   }
   let hintUntil = 0;
@@ -1663,14 +1686,17 @@
     } catch (e) { hitSet = null; }
   }
   // ── 直接点敌人：移动范围里光标压在打得到的敌人身上时，自动挑一个站位、显示伤害预估；确定 = 走过去打 ──
-  // 站位优先用光标刚经过的那个可停格（玩家自己走出来的路），不行就找离它最近、路程最短的一格；站桩远程只能在原地
+  // 目标在单位现在这一格就打得到：原地攻击，不挪动（远程、近战都一样）。
+  // 要先移动才打得到：站位优先用光标刚经过的那个可停格（玩家自己走出来的路），不行就找离它最近、路程最短的一格；
+  // 地上画出落点和路线（见 draw 里的“路径箭头”）。站桩远程只能在原地
   function standFor(t) {
     const q = sel, w = S.map.w, ox = q.x, oy = q.y, ok2 = [];
     const can = (x, y) => { q.x = x; q.y = y; let r = false; try { r = C.targets(S, q, x !== orig.x || y !== orig.y).includes(t); } catch (e) { } return r; };
     preview(true);
     try {
       const ls = lastStop || [orig.x, orig.y];
-      if (C.canStop(S, q, reach, ls[0], ls[1]) && can(ls[0], ls[1])) ok2.push([ls[0], ls[1], -1]);
+      if (can(orig.x, orig.y)) ok2.push([orig.x, orig.y, -2]);                       // 原地就打得到：不动
+      else if (C.canStop(S, q, reach, ls[0], ls[1]) && can(ls[0], ls[1])) ok2.push([ls[0], ls[1], -1]);
       else for (let i = 0; i < reach.dist.length; i++) {
         if (!(reach.dist[i] < Infinity)) continue; const x = i % w, y = (i - x) / w;
         if (Math.abs(x - t.x) + Math.abs(y - t.y) > 9) continue;                    // 射程最远的也就这么多，省得整张图都试
@@ -1679,6 +1705,12 @@
       }
     } finally { q.x = ox; q.y = oy; preview(false); }
     if (!ok2.length) return null; ok2.sort((a, b) => a[2] - b[2]); return [ok2[0][0], ok2[0][1]];
+  }
+  // 点的是看得见、本来打得动的敌人，但这个单位移动后不能开火、目标又不在它现在的射程内：直接点它不攻击，只提示一句
+  function outOfRange(x, y) {
+    if (!sel || moveFire(sel) || sel.fired || acted || !D.UNITS[sel.type].range) return false;
+    const e = unitAtV(x, y); if (!e || !isEnemy(sel.owner, e.owner)) return false;
+    try { return C.canHit ? !!C.canHit(S, sel, e) : true; } catch (err) { return false; }
   }
   function updateAim() {
     const had = !!aim; aim = null;
@@ -1690,7 +1722,7 @@
     // 伤害预估按站位算（雷达塔范围、地形加成都看攻击方站在哪）
     const ox = sel.x, oy = sel.y; preview(true); sel.x = st[0]; sel.y = st[1];
     try { targets = [t]; setTarget(0); } catch (e) { console.error(e); } finally { sel.x = ox; sel.y = oy; preview(false); }
-    aim = { t, stand: st };
+    aim = { t, stand: st, moves: st[0] !== sel.x || st[1] !== sel.y };
   }
   // 预演：单位已经摆到终点、行动还没定。核心在这期间一切“看不看得见”都按出发格算（C.setPreview / C.clearPreview）
   function preview(on) { if (!S) return; try { if (on) { if (C.setPreview) C.setPreview(S, sel, orig.x, orig.y); } else if (C.clearPreview) C.clearPreview(S); } catch (e) { console.error(e); } }
@@ -1733,7 +1765,7 @@
     const out = [];
     // 预演时 sel 已经站在终点：卸载点按这次行动出发时的视野列（预演期间核心自动如此；卸过一个之后预演已经清掉，所以出发格照样传给核心）
     const from = orig ? [orig.x, orig.y] : undefined;
-    sel.cargo.forEach((c, i) => { if (C.unloadSpots(S, sel, i, from).length) out.push({ label: tt('卸载 {name}', { name: D.UNITS[c.type].name }, 'cmd'), icon: 'unload', fn: () => { unloadIdx = i; spots = C.unloadSpots(S, sel, i, from); sIdx = 0; cur = { x: spots[0][0], y: spots[0][1] }; mode = 'unload'; } }); });
+    sel.cargo.forEach((c, i) => { if (C.unloadSpots(S, sel, i, from).length) out.push({ label: tt('卸载 {name}', { name: D.UNITS[c.type].name }, 'cmd'), icon: 'unload', right: 'HP ' + C.dispHp(c), fn: () => { unloadIdx = i; spots = C.unloadSpots(S, sel, i, from); sIdx = 0; cur = { x: spots[0][0], y: spots[0][1] }; mode = 'unload'; } }); });
     return out;
   }
   // gain：这次占下来立刻到手的资金（C.captureGain，占领前问好），飘一个金色的“+金额”
@@ -2057,7 +2089,61 @@
       if (!moveFire(u)) mark(u.y * w + u.x); // 移动后不能开火的：只算站在原地能打到的
       else for (let i = 0; i < n; i++) if (mv[i]) { const o = occ.get(i); if (!o || o === u) mark(i); }
     }
-    return { mv, at: at2 };
+    // 视野：以这个单位为中心、半径 = 核心算的视野半径（C.unitMods 的 vision：兵种视野 + 指挥官 / 科技 / 山地 / 灯火管制等修正，
+    // 和核心画战争迷雾用的是同一个数）的菱形。没开迷雾的对局也照这个数画
+    let sr = D.UNITS[u.type].vision || 1; try { const md = C.unitMods ? C.unitMods(S, u) : null; if (md && typeof md.vision === 'number' && md.vision > 0) sr = md.vision; } catch (e) { }
+    // 圈里的格子用核心的 C.unitSeeCells：菱形之内再扣掉它贴不着的森林、礁石、废墟等（这些格子里的敌人它看不见）；核心没有就画整个菱形
+    let sight = null; try { if (C.unitSeeCells) sight = C.unitSeeCells(S, u); } catch (e) { console.error(e); sight = null; }
+    if (!sight || sight.length !== n) {
+      sight = new Uint8Array(n);
+      for (let dy = -sr; dy <= sr; dy++) { const y = u.y + dy; if (y < 0 || y >= h) continue; const k = sr - Math.abs(dy); for (let x = Math.max(0, u.x - k); x <= Math.min(w - 1, u.x + k); x++) sight[y * w + x] = 1; }
+    }
+    return { u, mv, at: at2, sight, sr };
+  }
+  // ── 按住查看：按住取消键（鼠标右键 / Esc / 手柄 B）超过 HOLD_MS、或触屏长按一个单位，就一直显示它的移动范围、攻击范围和视野，松开恢复原样；
+  // 短按仍是“取消 / 返回”，但等到松开才执行。peek 只是叠在画面上的一层，不改 mode、不动光标 ──
+  const HOLD_MS = 200, TAP_STICKY = true;   // TAP_STICKY：鼠标右键短按一个单位，是否和以前一样进入“范围常显”（再按一次收起）
+  let peek = null, hold = null, rLast = 0;
+  const canHold = () => !!S && !Nav.stack.length && mode !== 'over' && mode !== 'title' && mode !== 'menu' && !curtain;
+  function peekStart(t) {
+    if (!canHold() || !t) return false;
+    const q = unitAtV(t.x, t.y); if (!q || (anim && anim.u === q)) return false;   // 只能看本来就看得见的单位
+    try { peek = threat(q); } catch (e) { console.error(e); peek = null; return false; }
+    sfx.tick(); Kit.wake(); return true;
+  }
+  function peekEnd() { if (peek) { peek = null; Kit.wake(); } }
+  // src：'mouse' / 'key' / 'pad'；t：要看的格子（鼠标是按下的位置，键盘和手柄是光标）
+  function holdDown(src, t, pos) {
+    if (hold) return;
+    const h = hold = { src, t, pos: pos || null, long: false, timer: 0 };
+    h.timer = setTimeout(() => { if (hold === h && peekStart(h.t)) h.long = true; }, HOLD_MS);   // 按够了时间、那一格上又有看得见的单位，才算“查看”
+  }
+  // 松开：这一次是查看就收起、不算取消；否则（短按，或按得久但那一格没有可看的单位）执行 tap
+  function holdUp(src, tap) {
+    const h = hold; if (!h || h.src !== src) return;
+    hold = null; clearTimeout(h.timer);
+    if (peek) { peekEnd(); return; }
+    if (!h.long) tap(h);
+  }
+  function holdReset() { if (hold) clearTimeout(hold.timer); hold = null; peek = null; }
+  // 视野的画法和战争迷雾一个路子：视野外压一层迷雾色（比真迷雾淡），视野边缘一圈浅色虚线。画在单位上面，所以视野外的单位也跟着暗下去
+  function drawSight(v, z) {
+    if (!z || !z.sight) return;
+    const w = S.map.w, h = S.map.h, has = (x, y) => x >= 0 && y >= 0 && x < w && y < h && z.sight[y * w + x] === 1;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.fillStyle = 'rgba(' + FOG_RGB[0] + ',' + FOG_RGB[1] + ',' + FOG_RGB[2] + ',.38)';
+    for (let y = v.y0; y <= v.y1; y++) for (let x = v.x0; x <= v.x1; x++) if (!has(x, y)) ctx.fillRect(bx + x * tp, by + y * tp, tp, tp);
+    const lw = Math.max(2, Math.round(tp / 12)), dash = Math.max(4, Math.round(tp / 6));
+    const hz = (X, Y) => { for (let k = 0; k < tp; k += dash * 2) ctx.fillRect(X + k, Y, Math.min(dash, tp - k), lw); }, vt = (X, Y) => { for (let k = 0; k < tp; k += dash * 2) ctx.fillRect(X, Y + k, lw, Math.min(dash, tp - k)); };
+    for (const [col, o] of [['rgba(14,18,32,.85)', 1], ['#fff3c4', 0]]) {   // 先压一道深色的影子，再画浅色的虚线
+      ctx.fillStyle = col;
+      for (let y = v.y0 - 1; y <= v.y1 + 1; y++) for (let x = v.x0 - 1; x <= v.x1 + 1; x++) {
+        if (!has(x, y)) continue;
+        const X = bx + x * tp + o, Y = by + y * tp + o;
+        if (!has(x, y - 1)) hz(X, Y); if (!has(x, y + 1)) hz(X, Y + tp - lw);
+        if (!has(x - 1, y)) vt(X, Y); if (!has(x + 1, y)) vt(X + tp - lw, Y);
+      }
+    }
   }
 
   async function ok(viaMouse) {
@@ -2104,7 +2190,8 @@
         await animMove(q, path, true); if (g !== gid || sel !== q) return;
         q.x = end[0]; q.y = end[1];
         openAction();
-      } else if (viaMouse) { sfx.back(); deselect(); } else sfx.no();
+      } else if (outOfRange(cur.x, cur.y)) { sfx.no(); popup({ x: cur.x, y: cur.y, id: 0 }, tt('目标不在射程内'), 'warn'); }
+      else if (viaMouse) { sfx.back(); deselect(); } else sfx.no();
     } else if (mode === 'target') {
       const t = targets[tIdx];
       if (cur.x !== t.x || cur.y !== t.y) return;
@@ -2330,7 +2417,7 @@
     endTurn();
   }
   function over() {
-    const g0 = gid; mode = 'over'; closeOverlays(); fcast = null; visMask = null;
+    const g0 = gid; mode = 'over'; closeOverlays(); fcast = null; visMask = seeMask = null;
     clearSave(); music('off');
     const win = winnersOf(), ps = plist(), hs = ps.filter(p => human[p] || quit.has(p));
     const lost = hs.length > 0 && hs.length < ps.length && !win.some(p => human[p]); // 有电脑参战、玩家不在获胜队伍里
@@ -2444,14 +2531,17 @@ let unlock = null; try { unlock = freeWin(win, lost); } catch (e) { console.erro
       e.preventDefault(); if (!e.repeat) { spaceDown = true; spaceDragged = false; cv.style.cursor = 'grab'; } return;
     }
     const a = KEYS[e.key.length === 1 ? e.key.toLowerCase() : e.key];
+    // 对局里的取消键（Esc / X / 退格 / K）：按住 = 查看光标下的单位，短按 = 取消，都等松开才算（见 holdDown / holdUp）。有菜单、页面开着时照旧按下就响应
+    if (a === 'cancel' && (canHold() || (hold && hold.src === 'key'))) { e.preventDefault(); if (!e.repeat && canHold()) { ptrKind = 'key'; Kit.setDev('key'); Kit.wake(); holdDown('key', { x: cur.x, y: cur.y }); } return; }
     if (a) { e.preventDefault(); act(a === 'rb' && e.key === 'Tab' && e.shiftKey ? 'lb' : a, 'key'); }
   });
+  addEventListener('keyup', e => { if (hold && hold.src === 'key' && KEYS[e.key.length === 1 ? e.key.toLowerCase() : e.key] === 'cancel') holdUp('key', () => act('cancel', 'key')); });
   addEventListener('keyup', e => {
     if (e.key !== ' ' || !spaceDown) return;
     spaceDown = false; cv.style.cursor = '';
     if (!spaceDragged && !drag) act('ok', 'key');
   });
-  addEventListener('blur', () => { spaceDown = false; drag = null; ptr = null; miniDown = false; cv.style.cursor = ''; });
+  addEventListener('blur', () => { spaceDown = false; drag = null; ptr = null; miniDown = false; cv.style.cursor = ''; holdReset(); });
 
   function tileAt(e) { const x = Math.floor((e.clientX - ox) / ts), y = Math.floor((e.clientY - TOP - oy) / ts); return (S && x >= 0 && y >= 0 && x < S.map.w && y < S.map.h) ? { x, y } : null; }
   // 鼠标落在哪块常驻面板上（阵营牌、信息、小地图、小地图开关）
@@ -2555,7 +2645,8 @@ let unlock = null; try { unlock = freeWin(win, lost); } catch (e) { console.erro
     if (tch) clearTimeout(tch.lp);
     if (tps.size >= 2) { tch = null; pinch = { d: tdist() }; return; }
     const st = { id: e.pointerId, x: e.clientX, y: e.clientY, moved: false, long: false, ev: { clientX: e.clientX, clientY: e.clientY, button: 0, pointerType: 'touch', pointerId: e.pointerId, preventDefault() { } } };
-    st.lp = setTimeout(() => { if (tch !== st || st.moved || Nav.stack.length || !S) return; const t = tileAt(st.ev); if (!t) return; st.long = true; if (mode === 'idle' || mode === 'move') hover(t); else { cur = t; lastCurKey = t.x + ',' + t.y; } openDetail(); }, 520);
+    st.lp = setTimeout(() => { if (tch !== st || st.moved || Nav.stack.length || !S) return; const t = tileAt(st.ev); if (!t) return; st.long = true; if (unitAtV(t.x, t.y) && peekStart(t)) { st.peek = true; return; }   // 长按单位：一直显示它的范围和视野，松手收起（详情用提示条上的“详情”）
+      if (mode === 'idle' || mode === 'move') hover(t); else { cur = t; lastCurKey = t.x + ',' + t.y; } openDetail(); }, 520);
     tch = st;
   });
   cv.addEventListener('pointermove', e => {
@@ -2569,18 +2660,28 @@ let unlock = null; try { unlock = freeWin(win, lost); } catch (e) { console.erro
   const touchEnd = e => {
     if (e.pointerType !== 'touch') return;
     tps.delete(e.pointerId); if (tps.size < 2) pinch = null;
-    if (tch && tch.id === e.pointerId) { const st = tch; tch = null; clearTimeout(st.lp); if (!st.moved && !st.long && e.type === 'pointerup') press(st.ev); }
+    if (tch && tch.id === e.pointerId) { const st = tch; tch = null; clearTimeout(st.lp); if (st.peek) peekEnd(); if (!st.moved && !st.long && e.type === 'pointerup') press(st.ev); }
   };
   cv.addEventListener('pointerup', touchEnd); cv.addEventListener('pointercancel', touchEnd);
   cv.addEventListener('mousedown', e => { if (e.button === 1) e.preventDefault(); });
-  addEventListener('contextmenu', e => {
-    e.preventDefault(); audio();
+  // 右键短按（松开时执行）：有菜单 / 页面开着 = 关掉；对局里走“取消”。pos 是按下时的位置
+  function rightTap(pos) {
     if (Nav.stack.length) return Nav.cancel();
     if (!S) return;
-    // 右键点在一个单位上：先把光标挪过去，再走“取消”——空闲时就是查看这个单位的范围
-    if (mode === 'inspect') { const t = tileAt(e), same = t && t.x === cur.x && t.y === cur.y; inspect = null; mode = 'idle'; if (same || !t || !unitAtV(t.x, t.y)) { sfx.back(); return; } hover(t); }   // 正在看范围：右键原处 / 空地 = 收起；右键另一个单位 = 换看它
-    else if (mode === 'idle') { const t = tileAt(e); if (t && unitAtV(t.x, t.y)) hover(t); }
+    // 右键点在一个单位上：先把光标挪过去，再走“取消”——空闲时就是看这个单位的范围（常显，再按一次收起）
+    if (mode === 'inspect') { const t = tileAt(pos), same = t && t.x === cur.x && t.y === cur.y; inspect = null; mode = 'idle'; if (same || !t || !unitAtV(t.x, t.y)) { sfx.back(); return; } hover(t); }   // 正在看范围：右键原处 / 空地 = 收起；右键另一个单位 = 换看它
+    else if (mode === 'idle') { const t = tileAt(pos), q = t && unitAtV(t.x, t.y); if (q) { if (!TAP_STICKY && !(undoOf() && undoOf().unit === q)) return; hover(t); } }
     cancel();
+  }
+  // 以前右键的动作挂在 contextmenu 事件上，而 macOS 的浏览器在右键“按下”时就发这个事件，所以一按就生效。
+  // 现在：按下只开始计时；按住超过 HOLD_MS 是查看（松开收起，不算取消）；短按在松开时才执行取消
+  addEventListener('mousedown', e => { if (e.button !== 2) return; audio(); Kit.wake(); const pos = { clientX: e.clientX, clientY: e.clientY }; holdDown('mouse', S && !Nav.stack.length && !hudAt(e) ? tileAt(e) : null, pos); }, true);
+  addEventListener('mouseup', e => { if (e.button !== 2) return; rLast = performance.now(); holdUp('mouse', h => rightTap(h.pos)); }, true);
+  addEventListener('contextmenu', e => {
+    e.preventDefault();
+    // 鼠标右键已经由上面的按下 / 松开处理；触屏长按也会发这个事件，另有一套。剩下的（Ctrl + 点按、键盘的菜单键）照旧当一次短按
+    if ((hold && hold.src === 'mouse') || performance.now() - rLast < 700 || e.pointerType === 'touch' || tps.size) return;
+    audio(); rightTap(e);
   });
 
   // 手柄
@@ -2599,6 +2700,11 @@ let unlock = null; try { unlock = freeWin(win, lost); } catch (e) { console.erro
     }
     for (const k of ['up', 'down', 'left', 'right', 'ok', 'cancel', 'x', 'y', 'lb', 'rb', 'start', 'mini', 'zoomIn', 'zoomOut', 'sound']) {
       const st = pad[k] || (pad[k] = { down: false, next: 0 });
+      if (k === 'cancel') {   // B：对局里按住 = 查看光标下的单位，短按 = 取消（松开时执行）；有菜单开着时按下就响应
+        if (inp.cancel) { if (!st.down) { st.down = true; if (canHold()) { ptrKind = 'key'; Kit.setDev('pad'); Kit.wake(); holdDown('pad', { x: cur.x, y: cur.y }); } else act('cancel', 'pad'); } }
+        else if (st.down) { st.down = false; holdUp('pad', () => act('cancel', 'pad')); }
+        continue;
+      }
       if (inp[k]) {
         if (!st.down) { st.down = true; st.next = now + 280; act(k, 'pad'); }
         else if (DIR[k] && now >= st.next) { st.next = now + 95; act(k, 'pad'); }
@@ -2612,7 +2718,7 @@ let unlock = null; try { unlock = freeWin(win, lost); } catch (e) { console.erro
   function busyNow(now) {
     if (!Kit.idle(now) || DEMO) return true;
     if (!S) return false;                       // 标题画面：只有背景插画的缓慢推移
-    return fx.length > 0 || plays.size > 0 || !!anim || !!shakeFx || ghosts.length > 0 || !!camAnim || mode === 'anim' || mode === 'ai' || curtain || loadingOn || !!bnOn || now <= toastUntil || mapDirty || warming;
+    return !!peek || fx.length > 0 || plays.size > 0 || !!anim || !!shakeFx || ghosts.length > 0 || !!camAnim || mode === 'anim' || mode === 'ai' || curtain || loadingOn || !!bnOn || now <= toastUntil || mapDirty || warming;
   }
   function frame(now) {
     requestAnimationFrame(frame);
@@ -2636,7 +2742,7 @@ let unlock = null; try { unlock = freeWin(win, lost); } catch (e) { console.erro
     coFactions, cosOf, coOrder, firstCo, loreCo, loreFac, quoteOf, coLabel, LORE,
     get soundOn() { return soundOn; }, setSound, applyVol, get zoomPref() { return zoomPref; }, setZoomPref(v) { zoomPref = v; lsSet('steel-tide.zoom', String(v)); if (S) setZoom(v); },
     fogOn, darkOn, plist, NP, teamTag, hasTeams, isAlive, isEnemy, teamOf, powersOn, coOf, costOf, unitBuff, unitTags, unitSeen, unitAtV, capPow, winnersOf, quit, get gaveUp() { return gaveUp; },
-    auraText, refreshVis, openCodex, hudMode: () => cfg.hud, setHudMode(v) { cfg.hud = v === 'full' ? 'full' : 'slim'; lsSet('steel-tide.hud', cfg.hud); }, openDetail, openSettings, presentTypes, tileCss, viewW, viewH, canAgain, openMapMenu, updateHud, switchLang,
+    auraText, cargoOf, refreshVis, openCodex, hudMode: () => cfg.hud, setHudMode(v) { cfg.hud = v === 'full' ? 'full' : 'slim'; lsSet('steel-tide.hud', cfg.hud); }, openDetail, openSettings, presentTypes, tileCss, viewW, viewH, canAgain, openMapMenu, updateHud, switchLang,
   };
   Front = window.AWFront(G); BT = window.AWBattle(G); HUD = BT.hud;
   G.front = Front; if (window.AWCodex) window.AWCodex.G = G;
@@ -2656,7 +2762,7 @@ let unlock = null; try { unlock = freeWin(win, lost); } catch (e) { console.erro
   const cssRect = r => r ? { l: r.x * u, t: r.y * u, r: (r.x + r.w) * u, b: (r.y + r.h) * u, w: r.w * u, h: r.h * u } : null;
   window.__game = {
     hitInfo() { return hitSet ? [...hitSet] : []; },
-    aimInfo() { return aim ? { t: [aim.t.x, aim.t.y], stand: aim.stand, fcast: fcast ? fcast.text : null } : null; },
+    aimInfo() { return aim ? { t: [aim.t.x, aim.t.y], stand: aim.stand, moves: !!aim.moves, fcast: fcast ? fcast.text : null } : null; },
     reachInfo() { if (!reachMask) return null; let stop = 0, pass = 0; for (const v of reachMask) { if (v === 1) stop++; else if (v === 2) pass++; } return { stop, pass }; },
     get S() { return S; }, get mode() { return mode; }, get cur() { return cur; }, act,
     get sound() { return soundOn; }, setSound,
@@ -2675,7 +2781,7 @@ let unlock = null; try { unlock = freeWin(win, lost); } catch (e) { console.erro
         loading: loadingOn, curtain, ambush: lastAmbush, hints: battleHints(),
       };
     },
-    get fog() { return { on: fogOn(), viewer: visP, mask: visMask, quiet, ramp: FOG_RAMP, levels: FOG_LV, rgb: FOG_RGB.slice(), alpha: FOG_A }; },
+    get fog() { return { on: fogOn(), viewer: visP, mask: visMask, see: seeMask, quiet, ramp: FOG_RAMP, levels: FOG_LV, rgb: FOG_RGB.slice(), alpha: FOG_A }; },
     fogTile: key => fogTile(key),
     // 标题页背景：art = 插画已画上（x、y、k 是插画左上角的屏幕坐标和缩放），否则是地图背景
     get titleBg() { return { art: !S && !!artAt, at: artAt ? Object.assign({}, artAt) : null, dim: bgDim, map: !!(bg && bg.cvs.length) }; },
@@ -2683,6 +2789,7 @@ let unlock = null; try { unlock = freeWin(win, lost); } catch (e) { console.erro
     // 最近几次出手的演出方式、特效队列里现在有哪些、最近一块弹牌（遇伏 / 再移动）、是不是在“再移动”那一段
     get atkLog() { return atkLog.slice(); }, get fxTypes() { return fx.map(f => f.type); }, get fxText() { return fx.filter(f => f.type === 'num').map(f => f.text); }, get fxList() { return fx.map(f => ({ type: f.type, x: f.x, y: f.y, text: f.text, t0: f.t0 })); }, get pop() { return lastPop; }, get again() { return canAgain(sel); }, canAgain: q => canAgain(q), get sel() { return sel; },
     get draws() { return drawN; },   // 对局画布一共重画了多少次（空闲降耗的断言用）
+    get peek() { return peek ? { id: peek.u.id, sr: peek.sr, sight: peek.sight } : null; }, get inspect() { return inspect ? { id: inspect.u.id, sr: inspect.sr } : null; }, threat: q => threat(q),
     get undo() { const i = undoOf(); return i ? { kind: i.kind, id: i.unit.id } : null; }, get last() { return { unlock: lastUnlock, built: Object.assign({}, lastBuilt), undo: lastUndo, ore: lastOre, rp: lastRp, capShow: lastCapShow, cap: lastCap, gain: lastGain, shot: lastShot, sell: lastSell, burn: lastBurn }; }, get ghost() { const g = ghosts[0]; return g ? { type: g.type, owner: g.owner, x: g.x, y: g.y } : null; }, get staged() { return !!(sel && orig && !committed && (sel.x !== orig.x || sel.y !== orig.y)); },
     unitTags, unitBuff: q => { const b = unitBuff(q); return Object.assign({}, b); }, runAI,
     sync() { checkMap(); miniDirty = true; updateHud(); },

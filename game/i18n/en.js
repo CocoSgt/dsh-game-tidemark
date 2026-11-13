@@ -74,6 +74,7 @@ AWI18n.add('en', {
   '修理费': 'Repair Cost',
   '免费': 'Free',
   '搭载数': 'Capacity',
+  '搭载的单位': 'Carried Units',
   '步兵类单位': 'Foot Soldiers',
   '无武装': 'Unarmed',
   '履带': 'Tracked',
@@ -824,7 +825,7 @@ AWI18n.add('en', {
   '选定': 'Pick',  // ui-front.js:206、ui-kit.js:293
   '切换指挥官': 'Switch CO',  // ui-front.js:206
   '开局时决定': 'Decided at Start',  // ui-front.js:215
-  '仅可看见己方单位和建筑周围的格子。森林中的敌方单位仅在相邻时可被发现。': 'You can only see the spaces around your own units and buildings. Enemy units in Forest can only be revealed from an adjacent space.',  // ui-front.js:250
+  '仅可看见己方单位和建筑周围的格子。森林、礁石、废墟中的敌方单位仅在相邻时可被发现，视野范围再大也看不到。': 'You can only see the spaces around your own units and buildings. Enemy units in Forest, Reef and Ruins can only be revealed from an adjacent space, no matter how far your Vision reaches.',
   '开局时各阵营持有的资金。': 'The Funds each faction holds at the start of the game.',  // ui-front.js:250
   '到达天数上限时，按建筑数和单位总造价判定胜负。选择“无”则不设上限。': 'When the Day limit is reached, the winner is decided by number of buildings and total unit cost. Choose “None” for no limit.',  // ui-front.js:251
   '攻击和受到攻击均可积累技能槽，积满后可发动指挥官技能。': 'Both attacking and being attacked fill the Power Meter; when it is full, the CO Power can be activated.',  // ui-front.js:251
@@ -898,11 +899,15 @@ AWI18n.add('en', {
   '已攻击 可再次移动': 'Attacked · Can Move Again',  // ui.js:1250
   '移动至此': 'Move Here',  // ui.js:1340
   '切换目标': 'Switch Target',  // ui.js:1341
+  '目标不在射程内': 'Target is out of Range',
   '卸载至此': 'Unload Here',  // ui.js:1342、ui.js:1368
   '切换位置': 'Switch Space',  // ui.js:1342
   '选择目标': 'Select Target',  // ui.js:1343
-  '关闭范围显示': 'Hide Range',  // ui.js:1344、ui.js:1368
-  '查看范围': 'View Range',  // ui.js:1348、ui.js:1349
+  '关闭范围和视野显示': 'Hide Range and Vision',
+  '查看范围和视野': 'View Range and Vision',
+  '按住：查看范围和视野': 'Hold: View Range and Vision',
+  '长按单位：查看范围和视野': 'Long-press a unit: View Range and Vision',
+  '按住右键：查看范围和视野': 'Hold right-click: View Range and Vision',
   '切换单位': 'Switch Unit',  // ui.js:1349
   '回合菜单': 'Turn Menu',  // ui.js:1430
   '就绪': 'Ready',  // ui.js:1472
@@ -2302,7 +2307,7 @@ AWI18n.add('en', {
   '无武装。可搭载 2 个徒步的步兵类单位（摩托兵除外），运送至前线后卸载。': 'Unarmed. Can load 2 foot soldiers that move on foot (Bikers excluded), carry them to the front and unload them.',
   '无武装。可搭载 1 个徒步的步兵类单位（摩托兵除外），飞越山地与海洋。': 'Unarmed. Can load 1 foot soldier that moves on foot (Bikers excluded) and fly over Mountain and Sea.',
   '赤焰军守着西边的火山岛，苍蓝军守着东南的红树林岛，中间隔着一片礁石和小岛。北面一条岛链公路靠三段双线跨海桥和一道沙洲连起来，坦克开得过去，但要绕一大圈，桥面没有掩护，舰炮和飞机一封就断；岛链正中的桥头岛有兵工厂和陨星矿，谁先站住谁占便宜。登陆艇和运输直升机可以横穿中间的海，直取对面侧翼的沙滩；海心岛、机场岛、南环礁上的陨星矿、雷达塔、机场和港口只有坐船坐飞机才上得去。': 'Crimson Flame holds the volcanic island in the west and Deep Azure the mangrove island in the southeast, with a stretch of reefs and islets between them. To the north, an island-chain road is linked by three double-lane sea bridges and a sandbar. Tanks can drive across, but it is a long detour, the bridge decks offer no cover, and ships\' guns and aircraft can cut it at any time. Bridgehead Isle, in the middle of the chain, has a Factory and a Meteor Mine, and whoever gets a foothold there first gains the advantage. Landers and Transport Copters can cross the sea in between and go straight for the Beaches on the opposite flank. The Meteor Mines, Radar Tower, Airport and Port on Midsea Isle, Airfield Isle and South Atoll can only be reached by ship or by air.',
-  '每回合提供 200 资金；每 2 回合产出 1 份陨星碎片（每个阵营最多计 3 座）。停留的己方步兵类单位每回合恢复 2 HP（需支付资金）。': 'Provides 200 Funds per turn. Every 2 turns: +1 Meteor Shards (at most 3 Meteor Mines count per faction). Your foot soldiers stationed here restore 2 HP per turn (costs Funds).',
+  '每回合提供 200 资金；每 3 回合产出 1 份陨星碎片（每个阵营最多计 2 座），每座一共可产出 3 份。停留的己方步兵类单位每回合恢复 2 HP（需支付资金）。': 'Provides 200 Funds per turn. Produces 1 Meteor Shard every 3 turns (at most 2 Meteor Mines count per faction); each mine produces 3 in total. Your foot soldiers stationed here restore 2 HP per turn (costs Funds).',
   '{n} 个': '{n}',
   '{n} 位': '{n}',
   '{n} 种': '{n}',
@@ -2424,7 +2429,6 @@ AWI18n.add('en', {
   '每 ': 'Every ',
   ' 回合产出 ': ' turns: +',
   '（每个阵营最多计 ': ' (at most ',
-  ' 座）': ' Meteor Mines count per faction)',
   '每回合提供 200 资金；': 'Provides 200 Funds per turn. ',
   '。停留的己方步兵类单位每回合恢复 2 HP（需支付资金）。': '. Your foot soldiers stationed here restore 2 HP per turn (costs Funds).',
   '很久以前，一颗陨星砸进了中央海的正中。': 'Long ago, a meteor crashed into the very center of the Central Sea.',
@@ -2460,7 +2464,7 @@ AWI18n.add('en', {
   '每回合治疗量 +{n}': 'Healing per turn +{n}',
   '每回合修理量 +{n}': 'Repair per turn +{n}',
   '移动力 +{n}': 'Movement +{n}',
-  '每 2 回合产出 1 份陨星碎片（每个阵营最多计 3 座）': 'Every 2 turns: +1 Meteor Shards (at most 3 Meteor Mines count per faction)',
+  '每 3 回合产出 1 份陨星碎片（每个阵营最多计 2 座），每座一共可产出 3 份': 'Produces 1 Meteor Shard every 3 turns (at most 2 Meteor Mines count per faction); each mine produces 3 in total',
   '{who} {stat}': '{who} {stat}',
 });
 
@@ -2490,6 +2494,7 @@ AWI18n.add('en', {
   '完整：每次占领弹出小窗，演出步兵占领建筑的过程；占领司令部时为整屏演出。简短：只在地图上显示跳减的占领值和换色。开启“电脑加速”时，电脑回合自动使用简短演出。': 'Full: every capture opens a small window showing the infantry taking the building; capturing an HQ plays full-screen. Short: only the capture points ticking down and the color change on the map. With CPU Speed-Up on, CPU turns always use the short version.',
   '研究点来源': 'Point Sources',
   '切换科技线': 'Switch Line',
+  '切换科技线（或 Tab）': 'Switch Line (or Tab)',
   '第 3 级强化指挥官技能。': 'Level 3 upgrades the CO Power.',
   '专属': 'Signature',
   '二选一': 'Pick One',
@@ -2547,6 +2552,9 @@ AWI18n.add('en', {
   '说明': 'Info',
   '数值': 'Stats',
   '强化价': 'Boost Cost',
+  '强化价 {n}': 'Boost Cost {n}',
+  '攻击 +{n}%（敌方强化价不高于 {k} 时）': 'Attack +{n}% (vs. enemies with Boost Cost {k} or less)',
+  '防御 +{n}%（敌方强化价不高于 {k} 时）': 'Defense +{n}% (vs. enemies with Boost Cost {k} or less)',
   '攻击各兵种的基础伤害': 'Base damage dealt to each unit',
   '受到各兵种攻击的基础伤害': 'Base damage taken from each unit',
   '攻击演示': 'Attack Demo',
@@ -2593,6 +2601,8 @@ AWI18n.add('en', {
   '切换设备': 'Switch Device',
   '投入': 'Invest',
   '可拾取 {n} 份{name}': 'Pick up {n} {name}',
+  '剩余 {n} 份{name}': '{n} {name} left',
+  '已采完': 'Depleted',
   '研究点 +{n}（现有 {m}）': 'Research Points +{n} (now {m})',
   '有可解锁的科技': 'A tech can be unlocked',
   '已用{list}获胜': 'Won as {list}',
@@ -2773,7 +2783,7 @@ AWI18n.add('en', {
   '己方单位的攻击不随 HP 减少而降低。修理费 ×2。': 'The Attack of your units does not drop as they lose HP. Repair cost ×2.',
   '己方城市也可以生产步兵类单位。步兵类单位造价 −20%、攻击 +10%。': 'Your Cities can also build foot soldiers. Foot soldiers get cost −20% and Attack +10%.',
   '各型坦克、深渊战车、装甲列车攻击 +15%。位于陨星矿、荒地、废墟的己方单位防御 +20%，每回合恢复 1 HP。己方陨星矿收入 +50%。': 'Light, Medium and Heavy Tanks, Abyss Tanks and Armored Trains get Attack +15%. Your units on Meteor Mines, Wasteland and Ruins get Defense +20% and restore 1 HP per turn. Your Meteor Mines give income +50%.',
-  '舰船攻击 +20%、移动力 +1。远程单位攻击 +15%。己方单位在沙滩上的移动消耗为 1。迷雾开启时，海洋、沙滩、礁石上的敌方单位始终可见（潜艇除外）。': 'Ships get Attack +20% and Movement +1. Ranged units get Attack +15%. Movement cost for your units on Beach is 1. With Fog of War on, enemy units on Sea, Beach and Reef are always visible (Submarines excluded).',
+  '舰船攻击 +20%、移动力 +1。远程单位攻击 +15%。己方单位在沙滩上的移动消耗为 1。迷雾开启时，视野范围内海洋、沙滩、礁石上的敌方单位都可见，礁石的隐蔽对其无效（潜艇除外）。': 'Ships get Attack +20% and Movement +1. Ranged units get Attack +15%. Movement cost for your units on Beach is 1. With Fog of War on, enemy units on Sea, Beach and Reef within your Vision are visible, and Reef does not hide them from you (Submarines excluded).',
   '所有单位造价 −15%。每击毁一个敌方单位，获得它造价 30% 的资金。': 'Cost of all units −15%. Each time you destroy an enemy unit, gain Funds equal to 30% of its cost.',
   '车辆攻击 +10%，在道路、桥梁上防御 +15%。回合开始时位于道路、桥梁的车辆本回合移动力 +2。装甲列车造价 −20%。': 'Vehicles get Attack +10%, and Defense +15% on Road and Bridge. Vehicles that start the turn on Road or Bridge get Movement +2 that turn. Armored Train cost −20%.',
   '汀鹭的修理本来就免费，只有“额外恢复 1 HP”有效': 'Ting Lu\'s repairs are already free; only “restore an extra 1 HP” applies',
@@ -2992,7 +3002,7 @@ AWI18n.add('en', {
   '位于荒地、废墟、陨星矿的己方单位防御更高。技能“开闸”：涨水一级，与海洋相邻的沙滩、荒地、礁石、废墟变为海洋。': 'Your units on Wasteland, Ruins and Meteor Mines have higher Defense. CO Power “Open the Gate”: the water rises one level, and Beach, Wasteland, Reef and Ruins adjacent to Sea become Sea.',
   '主管海军': 'Chief of the Navy',
   '黑潮阵营的大将，主管海军。五十八岁，老船长，四国通用的潮汐表是他年轻时编的。上一次战争，他的船队被四国轮流征用，沉得一条不剩。从那以后他只信海。像个教书先生，动手之前先讲道理。': 'A general of the Black Tide and its Chief of the Navy. Fifty-eight, an old ship\'s captain. The tide tables all four nations use were compiled by him in his youth. In the last war the four nations took turns commandeering his fleet until every ship was sunk. Since then he trusts only the sea. He has a schoolmaster\'s air, and explains his reasoning before he strikes.',
-  '舰船的攻击和移动力更高；迷雾开启时，海洋、沙滩、礁石上的敌方单位始终可见。技能“大潮”：敌方舰船的移动力大幅降低。': 'Ships have higher Attack and Movement; with Fog of War on, enemy units on Sea, Beach and Reef are always visible. CO Power “Spring Tide”: enemy ships\' Movement drops sharply.',
+  '舰船的攻击和移动力更高；迷雾开启时，视野范围内礁石里的敌方单位也可见。技能“大潮”：敌方舰船的移动力大幅降低。': 'Ships have higher Attack and Movement; with Fog of War on, enemy units on Reef within your Vision are visible too. CO Power “Spring Tide”: enemy ships\' Movement drops sharply.',
   '主管财务': 'Chief of Finance',
   '黑潮阵营的大将，主管财务，负责收买对手。四十一岁。她家三代的商行在上一次战争里赔得精光。她算过：打仗是世上最亏的买卖，每三十年亏一次，不如一次清账。客气，从不发火，说话只说一遍。': 'A general of the Black Tide and its Chief of Finance, responsible for buying off opponents. Forty-one. Three generations of her family\'s trading house were wiped out in the last war. She has run the numbers: war is the worst deal in the world, a loss every thirty years. Better to close the books once and for all. Courteous, never angry, and she says things only once.',
   '所有单位造价更低，击毁敌方单位可以获得资金。技能“收购”：支付资金，买下与己方单位相邻的敌方车辆，最多 2 个。': 'All units cost less, and destroying enemy units gives Funds. CO Power “Buyout”: pay Funds to buy enemy vehicles adjacent to your units, up to 2.',

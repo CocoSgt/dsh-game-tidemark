@@ -56,6 +56,13 @@
     .hbar .cp { display:flex; align-items:center; gap:4r; color:var(--gold); } .hbar .hp { color:var(--txt); } .hbar .hp.bad { color:#ff8a5c; } .hbar .tip { display:flex; align-items:center; gap:4r; color:#9fe8ff; font-size:max(20px,24r); font-weight:800; }
     .hbar .mk { display:inline-flex; align-items:center; gap:2r; height:34r; padding:0 8r; background:rgba(10,14,28,.7); box-shadow:inset 0 0 0 2r var(--line); font-size:max(20px,22r); font-weight:800; color:#fff2a8; } .hbar .mk.good { color:var(--green); } .hbar .mk.bad { color:#ff8a5c; } .hbar .mk.ore { color:#ffd0a0; } .hbar .mk.vl { color:#9fe8ff; } .hbar .mk .ic.s { width:24r; height:24r; }
     .hbar .more { color:var(--gold); font-size:max(20px,30r); }
+    /* 运输单位里装着的单位：底条上接在单位后面，一个箱子图标领着，逐个列出 */
+    .cg1 { display:inline-flex; align-items:center; gap:6r; white-space:nowrap; } .cg1 b { color:var(--pcl); font-weight:900; } .cg1 .hp.bad { color:#ff8a5c; } .cg1 .stars { font-size:max(20px,24r); }
+    .hbar .cg { display:flex; align-items:center; gap:12r; padding-left:12r; border-left:3r solid rgba(255,255,255,.18); font-size:max(20px,24r); } .hbar .cg canvas { height:40r !important; width:auto !important; } .hbar .cg .cg1 + .cg1 { padding-left:12r; border-left:2r dotted rgba(255,255,255,.25); }
+    body.narrow .hbar .cg .cg1 b { display:none; } body.narrow .hbar .cg { gap:8r; padding-left:8r; }
+    #hudI:not(.hbar) .cgl { display:flex; flex-wrap:wrap; align-items:center; gap:8r 18r; border-top:4r solid var(--line); padding-top:10r; font-size:max(20px,28r); }
+    .detail .dcg { display:flex; flex-direction:column; gap:10r; } .detail .dcg h4 { margin:0; display:flex; align-items:center; gap:10r; font-size:max(20px,26r); color:var(--mut); font-weight:800; } .detail .dcg h4 em { font-style:normal; color:var(--gold); }
+    .detail .dcg .cgl { display:flex; flex-wrap:wrap; gap:12r; } .detail .dcg .cg1 { gap:10r; padding:8r 20r 8r 10r; background:var(--bg2); box-shadow:inset 0 0 0 3r var(--line); font-size:max(20px,30r); }
     .hbar.thru { opacity:.38; }
     body.hud-slim #hudA { display:none; } body.hud-slim #hudO { top:76r; } body.hud-slim #hudO.low { top:76r; } body.hud-slim.narrow #hudO { top:76r; }
     body.narrow .hbar { gap:10r; height:64r; padding-right:18r; } body.narrow .hbar .oth, body.narrow .hbar .mt b, body.narrow .hbar .sp { display:none; } body.narrow .hbar .mt .bar { width:70r; } body.narrow .hbar .who { padding:0 22r 0 6r; gap:8r; }
@@ -163,10 +170,13 @@
         if (u.again) chips.push(`<span class="tag">${esc(tt('可再次行动'))}</span>`); else if (u.fired && !u.moved && u.left != null) chips.push(`<span class="tag">${esc(tt('可再次移动 {n}', { n: u.left }))}</span>`);
         h += `<div class="rw" style="${pcs(u.owner)}"><div class="bx">${unitS(u.type, u.owner, 100, u.moved ? 'data-dim="1"' : '')}</div><div><div class="n" style="color:var(--pcl)">${esc(u.name)}</div>` +
           `<div class="d">${Kit.ic('heart', 's')}<b class="${u.hp <= 3 ? 'bad' : ''}">${u.hp}</b>${u.stars ? Kit.stars(u.stars) : ''}${u.cargo ? Kit.ic('crate', 's') + u.cargo : ''}${u.vision ? Kit.ic('eye', 's') + u.vision : ''}</div></div></div>` +
+          ((u.cargoList || []).length ? `<div class="cgl">${Kit.ic('crate', 's')}${u.cargoList.map(c => cargoHtml(c, 56)).join('')}</div>` : '') +
           (chips.length ? `<div class="chips">${chips.slice(0, 5).join('')}</div>` : '');
       }
       return h;
     }
+    // 运输单位里的一个乘客：小图标 + 名字 + HP（和单位自己的 HP 同一种写法），有军衔、强化的带上。px 是图标边长
+    const cargoHtml = (c, px) => `<span class="cg1" style="${pcs(c.owner)}">${unitS(c.type, c.owner, px)}<b>${esc(c.name)}</b>${Kit.ic('heart', 's')}<span class="hp${c.hp <= 3 ? ' bad' : ''}">${c.hp}</span>${c.stars ? Kit.stars(c.stars) : ''}${c.ore ? Kit.ic('ore', 's') : ''}</span>`;
     // ── 精简的战场信息 ──
     const slimOn = () => !(G.hudMode && G.hudMode() === 'full');
     // 顶栏：阵营色的斜角签（小圆头像 / 徽记 + 阵营名）｜第 N 天｜资金、碎片、研究点（有买得起的科技时研究点变金色、带一个“!”）｜技能槽（满了发光并写技能名）｜其余阵营的徽记 + 资金
@@ -191,7 +201,8 @@
         for (const n of u.auraNames || []) ms.push(mk('', esc(n)));
         if (u.veil) ms.push(mk('vl', esc(u.veil)));
         if (u.again) ms.push(mk('good', esc(tt('可再次行动')))); else if (u.fired && !u.moved && u.left != null) ms.push(mk('good', esc(tt('可再次移动 {n}', { n: u.left }))));
-        h += `<i class="sp"></i><span class="sg" style="${pcs(u.owner)}">${unitS(u.type, u.owner, 46, u.moved ? 'data-dim="1"' : '')}<b>${esc(u.name)}</b>${Kit.ic('heart', 's')}<span class="hp${u.hp <= 3 ? ' bad' : ''}">${u.hp}</span>${u.stars ? Kit.stars(u.stars) : ''}${u.cargo ? Kit.ic('crate', 's') + u.cargo : ''}${ms.slice(0, 4).join('')}</span>`;
+        h += `<i class="sp"></i><span class="sg" style="${pcs(u.owner)}">${unitS(u.type, u.owner, 46, u.moved ? 'data-dim="1"' : '')}<b>${esc(u.name)}</b>${Kit.ic('heart', 's')}<span class="hp${u.hp <= 3 ? ' bad' : ''}">${u.hp}</span>${u.stars ? Kit.stars(u.stars) : ''}${ms.slice(0, 4).join('')}</span>` +
+          ((u.cargoList || []).length ? `<span class="cg">${Kit.ic('crate', 's')}${u.cargoList.map(c => cargoHtml(c, 40)).join('')}</span>` : '');
       }
       return h + (Kit.ptr() ? '<span class="more">›</span>' : '');
     }
@@ -239,7 +250,7 @@
         if (!e._c) { e._c = 1; e.onclick = () => G.act('y'); }
         if (s.ai && !slim) { const a = paint('hudA', 'hud pn', s.demo ? 'd' : 'a', () => esc(s.demo ? tt('演示对局') : tt('电脑行动中…'))); a.className = 'hud pn' + side; } else hide('hudA');
         if (m.info) {
-          const M = m.info, key = (slim ? 'S' : 'F') + JSON.stringify([M.tip, M.t, M.owner, M.cap, M.capBy, M.unit && [M.unit.type, M.unit.owner, M.unit.hp, M.unit.stars, M.unit.cargo, M.unit.moved, M.unit.fired, M.unit.again, M.unit.vision, M.unit.left, M.unit.aura, M.unit.ore, M.unit.veil, M.unit.buff && [M.unit.buff.atk, M.unit.buff.def, M.unit.buff.move, M.unit.buff.range, M.unit.buff.vision]], G.cur.x, G.cur.y, Kit.dev]);
+          const M = m.info, key = (slim ? 'S' : 'F') + JSON.stringify([M.tip, M.t, M.owner, M.cap, M.capBy, M.unit && [M.unit.type, M.unit.owner, M.unit.hp, M.unit.stars, M.unit.cargo, M.unit.cargoList, M.unit.moved, M.unit.fired, M.unit.again, M.unit.vision, M.unit.left, M.unit.aura, M.unit.ore, M.unit.veil, M.unit.buff && [M.unit.buff.atk, M.unit.buff.def, M.unit.buff.move, M.unit.buff.range, M.unit.buff.vision]], G.cur.x, G.cur.y, Kit.dev]);
           const i = paint('hudI', 'hud', key, () => slim ? slimInfo(M) : infoHtml(M));
           if (slim) { if (!i.classList.contains('hbar')) i.className = 'hud hbar'; m.right = slide(i, 'hudI', m, false) === 'r'; } else i.className = 'hud pn' + (m.right ? '' : ' l');
           if (!i._c) { i._c = 1; i.onclick = () => G.openDetail(); }
@@ -338,7 +349,8 @@
       });
       // 右边的单位卡：选了强化就写出强化后的变化
       function card(it) { const R = D.RES || {}, c = $('bcd'); c.innerHTML = Kit.unitCard(it.k, { owner: G.artCode(m.p), compact: true, ore: it.strong ? it.ore : 0, cost: it.cost, mods: it.mods, present: m.present,
-        buffs: it.strong ? Kit.chip(Kit.ic('ore', 's'), tt('陨星强化'), '', 'good') + Kit.oreChips(it.k) : '' }); Kit.hydrate(c); }
+        // 强化花几份、得到什么：没选强化时也列出来（灰色），选了变成绿色
+        buffs: it.ore ? Kit.chip(Kit.ic('ore', 's'), it.strong ? tt('陨星强化') : tt('强化价 {n}', { n: it.ore }), '', it.strong ? 'good' : '') + Kit.oreFx(it.k).map(e => Kit.chip(Kit.ic(e.icon, 's'), e.text, '', it.strong ? 'good' : '')).join('') : '' }); Kit.hydrate(c); }
       const jump = d => { const it = Nav.items(), i = it.indexOf(Nav.top().f), n = it[Math.max(0, Math.min(it.length - 1, i + d))]; if (n) { Nav.focus(n); sfx.tick(); } };
       const ls = $('bls');
       // 每一行两种造法：常规（只花资金）和强化（多花 D.RES，造出来攻击、防御更高）。左右键 / 点行尾的两块在两者间切换，确定按当前造法生产
@@ -377,7 +389,9 @@
       let tab = q ? 'unit' : 'terr';
       const inc = T.income ? Math.round(T.income * ((S.rules && S.rules.income) || G.INC) / (G.RDEF.income || 100)) : 0;
       const body = () => {
-        if (tab === 'unit') { const x = unitExtra(q); return Kit.unitCard(q.type, { unit: q, owner: G.artCode(q.owner), cost: G.costOf(q.owner, q.type), mods: x.mods, buffs: x.buffs, tags: x.tags, present: G.presentTypes(q.owner) }); }
+        if (tab === 'unit') { const x = unitExtra(q), cg = G.cargoOf ? G.cargoOf(q) : []; let cap = 0; try { cap = C.carryCap ? C.carryCap(S, q) : 0; } catch (e) { }
+          const cgH = cg.length ? `<div class="dcg"><h4>${Kit.ic('crate', 's')}${esc(tt('搭载的单位'))}<em>${cg.length}${cap ? '/' + cap : ''}</em></h4><div class="cgl">${cg.map(c => cargoHtml(c, 72)).join('')}</div></div>` : '';
+          return Kit.unitCard(q.type, { unit: q, owner: G.artCode(q.owner), cost: G.costOf(q.owner, q.type), mods: x.mods, buffs: x.buffs, tags: x.tags, present: G.presentTypes(q.owner) }) + cgH; }
         let capBy = 0; try { if (q && m.cap[o.y][o.x] < 20 && C.canCapture(S, q)) capBy = G.capPow(q); } catch (e) { }
         return Kit.terrCard(t, { owner: G.artCode(own), xy: [o.x, o.y], cap: m.cap[o.y][o.x], income: inc });
       };

@@ -100,11 +100,14 @@
     Cap.on = true; Cap.last = { t: o.t, by: o.by, from: o.from, to: o.to, done: !!o.done, big: !!o.big, role: o.role, steps, gain: o.gain || '', skipped: false };
     (async () => {
       num.innerHTML = o.from + (o.done ? '' : `<small>/ 20</small>`);
-      await wait(170 * k);
+      await wait(170 * k); un.style.transformOrigin = '50% 100%';   // 落地压扁时以脚底为准
       for (let i = 1; i <= steps && !skip; i++) {
-        if (un.animate) un.animate([{ transform: 'translateY(0)' }, { transform: `translateY(${-bw * 0.42}px)`, offset: 0.45 }, { transform: 'translateY(0)' }], { duration: gap, easing: 'ease-in-out' });
-        await wait(gap); if (skip) break;
+        // 起跳慢一点、下落快一点（落下时加速），落地那一下才扣数字、出声、扬尘；落地后在地上停一拍再跳下一下，免得看起来是起跳时扣的
+        const air = gap * 0.78, rest = gap * 0.42;
+        if (un.animate) un.animate([{ transform: 'translateY(0)', easing: 'cubic-bezier(.2,.7,.4,1)' }, { transform: `translateY(${-bw * 0.42}px)`, offset: 0.5, easing: 'cubic-bezier(.6,0,.9,.5)' }, { transform: 'translateY(0) scale(1.08, .9)', offset: 0.96 }, { transform: 'translateY(0)' }], { duration: air });
+        await wait(air * 0.96); if (skip) break;
         land(Math.round(o.from - (o.from - o.to) * i / steps));
+        await wait(air * 0.04 + rest); if (skip) break;
       }
       setNum(o.to);
       if (!o.done) { un.classList.add('salute'); await wait(330 * k); }

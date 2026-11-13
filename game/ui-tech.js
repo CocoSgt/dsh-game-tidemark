@@ -115,8 +115,19 @@
       onCancel: () => { if (pop) { sfx.back(); setPop(''); } else close(); },
       onFocus: b => { if (!b.dataset.id) return; Kit.note(''); const ln = lines[li]; if (ln) sel[ln.line] = Math.max(0, (ln.items || []).findIndex(x => x.id === b.dataset.id)); desc(); Kit.paintHints(true); },
       keys: { up: () => line(-1), down: () => line(1), left: () => { setPop(''); Nav.move('left'); }, right: () => { setPop(''); Nav.move('right'); }, lb: () => fund(-1), rb: () => fund(1), x: () => { sfx.tick(); setPop(pop ? '' : 'all'); }, y: () => { if (C.boostInfo && D.RES) boost(); else return false; } },
-      hints: () => Kit.ptr() ? [] : [['a', actOf(curIt())[1], false, true], ['b', '关闭'], ['x', '研究点来源'], ['ud', '切换科技线']],   // 鼠标、触屏：按钮都在面板上（右上角“研究点来源”“关闭”）
+      // 上下（键盘另有 Tab / Shift+Tab）在左边的科技线之间移动；Q / E（手柄 LB / RB）调研究经费的档位；左右在这一条线的各级之间移动
+      hints: () => Kit.ptr() ? [] : [['a', actOf(curIt())[1], false, true], ['b', '关闭'], ['x', '研究点来源'], ['ud', Kit.dev === 'key' ? '切换科技线（或 Tab）' : '切换科技线'], ['lbrb', '研究经费']],   // 鼠标、触屏：按钮都在面板上（右上角“研究点来源”“关闭”）
     });
+    // Tab 在全局是“下一个”（和 E 一样映射成 rb，见 ui.js 的 KEYS），到这一页会变成调经费。这里抢在全局映射之前把 Tab 单独接住：
+    // Tab = 下一条科技线，Shift+Tab = 上一条；Q / E 照旧走 lb / rb 调经费。页面关掉（或被别的页面盖住）就不管
+    const onTab = e => {
+      if (!scr.on) { removeEventListener('keydown', onTab, true); return; }
+      if (e.key !== 'Tab' || e.metaKey || e.ctrlKey || e.altKey) return;
+      const t = Nav.top(); if (!t || t.el !== scr.el) return;
+      e.preventDefault(); e.stopImmediatePropagation(); Kit.setDev('key'); Kit.wake();
+      if (!closing) line(e.shiftKey ? -1 : 1);
+    };
+    addEventListener('keydown', onTab, true);
     $('thx').onclick = close; $('thpop').onclick = () => { sfx.tick(); setPop(pop ? '' : 'all'); };
     // 科技是“攒研究点、点数够了立即解锁”。这张卡片按确定会做什么：[样式, 按钮文字]
     function actOf(it) {

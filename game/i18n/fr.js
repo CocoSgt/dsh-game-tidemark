@@ -76,6 +76,7 @@ AWI18n.add('fr', {
   '修理费': 'Frais de réparation',
   '免费': 'Gratuit',
   '搭载数': 'Capacité',
+  '搭载的单位': 'Unités embarquées',
   '步兵类单位': 'Unités d\'infanterie',
   '无武装': 'Non armé',
   '履带': 'Chenilles',
@@ -852,7 +853,7 @@ AWI18n.add('fr', {
   '选定': 'Sélectionner',  // ui-front.js:206、ui-kit.js:293
   '切换指挥官': 'Autre commandant',  // ui-front.js:206
   '开局时决定': 'Décidé au début de la partie',  // ui-front.js:215
-  '仅可看见己方单位和建筑周围的格子。森林中的敌方单位仅在相邻时可被发现。': 'Vous ne voyez que les cases autour de vos unités et de vos bâtiments. Une unité ennemie en forêt n\'est repérée que par une unité adjacente.',  // ui-front.js:250
+  '仅可看见己方单位和建筑周围的格子。森林、礁石、废墟中的敌方单位仅在相邻时可被发现，视野范围再大也看不到。': 'Vous ne voyez que les cases autour de vos unités et de vos bâtiments. Une unité ennemie en forêt, sur un récif ou dans des ruines n\'est repérée que par une unité adjacente, même avec une très grande vision.',
   '开局时各阵营持有的资金。': 'Fonds de chaque faction au début de la partie.',  // ui-front.js:250
   '到达天数上限时，按建筑数和单位总造价判定胜负。选择“无”则不设上限。': 'Une fois la limite de jours atteinte, le vainqueur est désigné selon le nombre de bâtiments et le coût total des unités. « Aucun » supprime la limite.',  // ui-front.js:251
   '攻击和受到攻击均可积累技能槽，积满后可发动指挥官技能。': 'Attaquer et être attaqué remplissent la jauge de pouvoir ; une fois pleine, elle permet d\'activer le pouvoir du commandant.',  // ui-front.js:251
@@ -926,11 +927,15 @@ AWI18n.add('fr', {
   '已攻击 可再次移动': 'A attaqué · nouveau déplacement possible',  // ui.js:1250
   '移动至此': 'Déplacer ici',  // ui.js:1340
   '切换目标': 'Autre cible',  // ui.js:1341
+  '目标不在射程内': 'Cible hors de portée',
   '卸载至此': 'Débarquer ici',  // ui.js:1342、ui.js:1368
   '切换位置': 'Autre case',  // ui.js:1342
   '选择目标': 'Choisir la cible',  // ui.js:1343
-  '关闭范围显示': 'Masquer la portée',  // ui.js:1344、ui.js:1368
-  '查看范围': 'Voir la portée',  // ui.js:1348、ui.js:1349
+  '关闭范围和视野显示': 'Masquer portée et vision',
+  '查看范围和视野': 'Voir portée et vision',
+  '按住：查看范围和视野': 'Maintenir : voir portée et vision',
+  '长按单位：查看范围和视野': 'Appui long sur une unité : voir portée et vision',
+  '按住右键：查看范围和视野': 'Maintenir clic droit : voir portée et vision',
   '切换单位': 'Autre unité',  // ui.js:1349
   '回合菜单': 'Menu du tour',  // ui.js:1430
   '就绪': 'Prêt',  // ui.js:1472
@@ -2313,7 +2318,7 @@ AWI18n.add('fr', {
   '每回合治疗量 +{n}': 'Soins par tour +{n}',
   '每回合修理量 +{n}': 'Réparation par tour +{n}',
   '移动力 +{n}': 'Mouvement +{n}',
-  '每 2 回合产出 1 份陨星碎片（每个阵营最多计 3 座）': 'Tous les 2 tours : 1 Éclat de Météore (3 mines au plus par faction)',
+  '每 3 回合产出 1 份陨星碎片（每个阵营最多计 2 座），每座一共可产出 3 份': 'Tous les 3 tours : 1 Éclat de Météore (2 mines au plus par faction), 3 au total par mine',
   '{who} {stat}': '{who} : {stat}',
 });
 
@@ -2356,7 +2361,7 @@ AWI18n.add('fr', {
   '无武装。可搭载 2 个徒步的步兵类单位（摩托兵除外），运送至前线后卸载。': 'Non armé. Peut embarquer 2 unités d\'infanterie à pied (motards exclus) et les débarquer au front.',
   '无武装。可搭载 1 个徒步的步兵类单位（摩托兵除外），飞越山地与海洋。': 'Non armé. Peut embarquer 1 unité d\'infanterie à pied (motards exclus) et survoler montagnes et mers.',
   '赤焰军守着西边的火山岛，苍蓝军守着东南的红树林岛，中间隔着一片礁石和小岛。北面一条岛链公路靠三段双线跨海桥和一道沙洲连起来，坦克开得过去，但要绕一大圈，桥面没有掩护，舰炮和飞机一封就断；岛链正中的桥头岛有兵工厂和陨星矿，谁先站住谁占便宜。登陆艇和运输直升机可以横穿中间的海，直取对面侧翼的沙滩；海心岛、机场岛、南环礁上的陨星矿、雷达塔、机场和港口只有坐船坐飞机才上得去。': 'L\'armée de la Flamme Écarlate tient l\'île volcanique à l\'ouest, celle de l\'Azur Profond l\'île aux mangroves au sud-est ; entre elles, des récifs et des îlots. Au nord, une route relie les îles par trois ponts maritimes à deux voies et un banc de sable : les chars y passent, mais au prix d\'un grand détour, et les ponts, sans abri, sont coupés dès que les canons de marine et les avions les prennent pour cible ; au milieu de la chaîne, l\'île de la Tête de Pont a une usine et une mine de Météore, et le premier qui s\'y installe prend l\'avantage. Les barges et les hélicos de transport peuvent traverser la mer qui sépare les deux camps et viser directement les plages du flanc adverse ; les mines de Météore, la tour radar, l\'aéroport et le port de l\'île du Milieu, de l\'île de l\'Aéroport et de l\'atoll du Sud ne s\'atteignent que par mer ou par air.',
-  '每回合提供 200 资金；每 2 回合产出 1 份陨星碎片（每个阵营最多计 3 座）。停留的己方步兵类单位每回合恢复 2 HP（需支付资金）。': 'Fournit 200 fonds par tour ; tous les 2 tours, produit 1 Éclat de Météore (3 mines au plus comptées par faction). Vos unités d\'infanterie qui y stationnent récupèrent 2 HP par tour (payant).',
+  '每回合提供 200 资金；每 3 回合产出 1 份陨星碎片（每个阵营最多计 2 座），每座一共可产出 3 份。停留的己方步兵类单位每回合恢复 2 HP（需支付资金）。': 'Fournit 200 fonds par tour ; tous les 3 tours, produit 1 Éclat de Météore (2 mines au plus comptées par faction), et 3 au total par mine. Vos unités d\'infanterie qui y stationnent récupèrent 2 HP par tour (payant).',
   '{n} 个': '{n}',
   '{n} 位': '{n}',
   '{n} 种': '{n}',
@@ -2461,6 +2466,7 @@ AWI18n.add('fr', {
   '停留的己方{kind}每回合恢复 2 HP（需支付资金）。': 'Vos unités qui y stationnent ({kind}) récupèrent 2 HP par tour (payant).',
   '研究点来源': 'Sources de points',
   '切换科技线': 'Changer de ligne',
+  '切换科技线（或 Tab）': 'Changer de ligne (ou Tab)',
   '第 3 级强化指挥官技能。': 'Le niveau 3 renforce le pouvoir du commandant.',
   '专属': 'Exclusive',
   '二选一': 'Au choix',
@@ -2563,6 +2569,9 @@ AWI18n.add('fr', {
   '说明': 'Description',
   '数值': 'Données',
   '强化价': 'Coût du renfort',
+  '强化价 {n}': 'Coût du renfort {n}',
+  '攻击 +{n}%（敌方强化价不高于 {k} 时）': 'Attaque +{n} % (ennemis au coût du renfort de {k} au plus)',
+  '防御 +{n}%（敌方强化价不高于 {k} 时）': 'Défense +{n} % (ennemis au coût du renfort de {k} au plus)',
   '攻击各兵种的基础伤害': 'Dégâts de base contre chaque unité',
   '受到各兵种攻击的基础伤害': 'Dégâts de base subis de chaque unité',
   '攻击演示': 'Démonstration d\'attaque',
@@ -2609,6 +2618,8 @@ AWI18n.add('fr', {
   '切换设备': 'Autre appareil',
   '投入': 'Investir',
   '可拾取 {n} 份{name}': 'À ramasser : {n} ({name})',
+  '剩余 {n} 份{name}': 'Restant : {n} ({name})',
+  '已采完': 'Épuisée',
   '研究点 +{n}（现有 {m}）': 'Points de recherche +{n} (total : {m})',
   '有可解锁的科技': 'Technologie à débloquer',
   '已用{list}获胜': 'Victoires avec : {list}',
@@ -2787,7 +2798,7 @@ AWI18n.add('fr', {
   '己方单位的攻击不随 HP 减少而降低。修理费 ×2。': 'L\'attaque de vos unités ne baisse pas avec la perte de HP. Frais de réparation ×2.',
   '己方城市也可以生产步兵类单位。步兵类单位造价 −20%、攻击 +10%。': 'Vos villes peuvent aussi produire les unités d\'infanterie. Unités d\'infanterie : coût −20 %, attaque +10 %.',
   '各型坦克、深渊战车、装甲列车攻击 +15%。位于陨星矿、荒地、废墟的己方单位防御 +20%，每回合恢复 1 HP。己方陨星矿收入 +50%。': 'Chars légers, moyens et lourds, char abyssal et train blindé : attaque +15 %. Vos unités sur mine de Météore, friche et ruines : défense +20 %, 1 HP récupéré par tour. Vos mines de Météore : revenu +50 %.',
-  '舰船攻击 +20%、移动力 +1。远程单位攻击 +15%。己方单位在沙滩上的移动消耗为 1。迷雾开启时，海洋、沙滩、礁石上的敌方单位始终可见（潜艇除外）。': 'Navires : attaque +20 %, mouvement +1. Unités à distance : attaque +15 %. Coût de déplacement de vos unités sur plage : 1. Avec brouillard, les unités ennemies en mer, sur plage et sur récif sont toujours visibles (sauf les sous-marins).',
+  '舰船攻击 +20%、移动力 +1。远程单位攻击 +15%。己方单位在沙滩上的移动消耗为 1。迷雾开启时，视野范围内海洋、沙滩、礁石上的敌方单位都可见，礁石的隐蔽对其无效（潜艇除外）。': 'Navires : attaque +20 %, mouvement +1. Unités à distance : attaque +15 %. Coût de déplacement de vos unités sur plage : 1. Avec brouillard, les unités ennemies en mer, sur plage et sur récif situées dans votre champ de vision sont visibles, et le récif ne les camoufle pas (sauf les sous-marins).',
   '所有单位造价 −15%。每击毁一个敌方单位，获得它造价 30% 的资金。': 'Toutes les unités : coût −15 %. Chaque unité ennemie détruite rapporte 30 % de son coût en fonds.',
   '车辆攻击 +10%，在道路、桥梁上防御 +15%。回合开始时位于道路、桥梁的车辆本回合移动力 +2。装甲列车造价 −20%。': 'Véhicules : attaque +10 %, défense +15 % sur route et sur pont. Véhicules qui commencent le tour sur route ou sur pont : mouvement +2 ce tour. Train blindé : coût −20 %.',
   '汀鹭的修理本来就免费，只有“额外恢复 1 HP”有效': 'Les réparations de Ting Lu sont déjà gratuites : seul « 1 HP récupéré en plus » s\'applique',
@@ -3006,7 +3017,7 @@ AWI18n.add('fr', {
   '位于荒地、废墟、陨星矿的己方单位防御更高。技能“开闸”：涨水一级，与海洋相邻的沙滩、荒地、礁石、废墟变为海洋。': 'Vos unités situées sur une friche, des ruines ou une mine de Météore ont une défense plus élevée. Pouvoir « Vannes ouvertes » : l\'eau monte d\'un niveau ; les plages, friches, récifs et ruines adjacents à la mer deviennent mer.',
   '主管海军': 'Chef de la Marine',
   '黑潮阵营的大将，主管海军。五十八岁，老船长，四国通用的潮汐表是他年轻时编的。上一次战争，他的船队被四国轮流征用，沉得一条不剩。从那以后他只信海。像个教书先生，动手之前先讲道理。': 'Général de la Marée d\'Ombre, chef de la Marine. Cinquante-huit ans, vieux capitaine : les tables des marées en usage dans les quatre nations, c\'est lui qui les a établies dans sa jeunesse. À la dernière guerre, sa flotte a été réquisitionnée tour à tour par les quatre nations ; pas un navire n\'est resté à flot. Depuis, il ne croit qu\'à la mer. Des airs de maître d\'école : il explique avant de frapper.',
-  '舰船的攻击和移动力更高；迷雾开启时，海洋、沙滩、礁石上的敌方单位始终可见。技能“大潮”：敌方舰船的移动力大幅降低。': 'Les navires ont une attaque et un mouvement plus élevés ; avec brouillard, les unités ennemies en mer, sur plage et sur récif sont toujours visibles. Pouvoir « Grande marée » : le mouvement des navires ennemis diminue fortement.',
+  '舰船的攻击和移动力更高；迷雾开启时，视野范围内礁石里的敌方单位也可见。技能“大潮”：敌方舰船的移动力大幅降低。': 'Les navires ont une attaque et un mouvement plus élevés ; avec brouillard, les unités ennemies sur récif situées dans votre champ de vision sont aussi visibles. Pouvoir « Grande marée » : le mouvement des navires ennemis diminue fortement.',
   '主管财务': 'Cheffe des Finances',
   '黑潮阵营的大将，主管财务，负责收买对手。四十一岁。她家三代的商行在上一次战争里赔得精光。她算过：打仗是世上最亏的买卖，每三十年亏一次，不如一次清账。客气，从不发火，说话只说一遍。': 'Générale de la Marée d\'Ombre, cheffe des Finances, chargée d\'acheter les adversaires. Quarante et un ans. La maison de commerce de sa famille, vieille de trois générations, a tout perdu à la dernière guerre. Son calcul : la guerre est la pire des affaires, à perte tous les trente ans ; autant solder le compte une fois pour toutes. Courtoise, jamais en colère, ne dit les choses qu\'une fois.',
   '所有单位造价更低，击毁敌方单位可以获得资金。技能“收购”：支付资金，买下与己方单位相邻的敌方车辆，最多 2 个。': 'Toutes les unités coûtent moins cher, et détruire une unité ennemie rapporte des fonds. Pouvoir « Rachat » : vous payez des fonds pour acheter les véhicules ennemis adjacents à vos unités, 2 au plus.',
