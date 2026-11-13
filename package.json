@@ -2,7 +2,7 @@
   "name": "dsh-game-tidemark",
   "version": "1.0.1",
   "description": "Tidemark (潮汐战线): a turn-based tactics game for the DSH Game Store. Where the tide leaves its mark.",
-  "license": "SEE LICENSE IN LICENSE.md",
+  "license": "MIT",
   "author": "CocoSgt",
   "repository": {
     "type": "git",
