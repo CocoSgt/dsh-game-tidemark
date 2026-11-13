@@ -138,7 +138,7 @@
       if (!rec) box.innerHTML = `${U.badge(-1, { cls: 'l' })}<span class="none">${esc(T('还没有记录'))}</span>${num(par, T('标准天数'))}`;
       else {
         const b = rec.best;
-        box.innerHTML = `${badgeOf(rec, 'l')}${num(b.total, T('最高分'), '/300')}${num(rec.days, T('最少天数'), '/' + par)}${num(coS(rec), T('拿过 S 的指挥官'), '/' + nCo)}`;
+        box.innerHTML = `${badgeOf(rec, 'l')}${num(b.total, T('最高分'), '/300')}${num(rec.days, T('最少天数'), '/' + par)}${num(coS(rec), T('获得 S 评价的指挥官'), '/' + nCo)}`;
       }
       if (fresh && o.again) o.again();
     } catch (e) { console.error(e); }
@@ -146,7 +146,7 @@
 
   // ───────── 结算页（自由对局 ui-battle.js over()、战役 ui-campaign.js finish()）─────────
   // host：结算页右边那一栏；o：{ S, human: 数组（下标 = 席位）, lost }。只有玩家赢了电脑才出现；不计分时写一行原因
-  const WHY = { humans: '要一名玩家对战电脑才评分。', days: '按天数上限判定的胜利不评分。', mods: '启用了改变规则的扩展，这一局不评分。', rules: '开局资金、建筑收入、人数补偿要用这张地图的默认设置才评分。', teams: '队伍要用这张地图的默认分法才评分。', nostat: '这份存档来自旧版本，这一局不评分。' };
+  const WHY = { humans: '只有一名玩家对战电脑的对局才评分。', days: '按天数上限判定的胜利不评分。', mods: '启用了改变规则的扩展，这一局不评分。', rules: '开局资金、建筑收入、人数补偿使用这张地图的默认设置时才评分。', teams: '队伍使用这张地图的默认分法时才评分。', nostat: '这份存档来自旧版本，这一局不评分。' };
   function detail(box) {
     const tog = () => { box.classList.toggle('more'); try { ((G() && G().sfx) || Kit.sfx).tick(); } catch (e) { } };
     box.querySelectorAll('.rkmore, .rkdet').forEach(b => { b.onclick = e => { e.stopPropagation(); tog(); }; });
@@ -168,8 +168,8 @@
       if (!sub) { sub = R.submit(j); S.rk.sent = { isNew: sub.isNew, rec: sub.rec }; }
       U.last = { judge: j, isNew: sub.isNew };
       const N = sub.isNew || {}, news = [];
-      if (N.total && !N.first) news.push(T('最高分')); if (N.days && !N.first) news.push(T('最少天数')); if (N.co && !N.first && j.ri === 3) news.push(T('这位指挥官的第一个 S')); if (N.hard) news.push(T('困难难度的 S'));
-      if (j.ri < 3) news.push(T('离 S 还差 {n} 分', { n: R.K.S - j.total }));
+      if (N.total && !N.first) news.push(T('最高分')); if (N.days && !N.first) news.push(T('最少天数')); if (N.co && !N.first && j.ri === 3) news.push(T('这位指挥官首次获得 S 评价')); if (N.hard) news.push(T('在困难难度获得 S 评价'));
+      if (j.ri < 3) news.push(T('距离 S 评价还差 {n} 分', { n: R.K.S - j.total }));
       const isNew = !!(N.first || N.total || N.rank || N.days || N.hard);
       const fast = U.fast || !!(G() && G().DEMO), hard = j.ri === 3 && j.lvI === 2;
       const box = document.createElement('div'); box.className = 'rkres' + (fast ? ' fast' : ''); const dl = [];
@@ -238,7 +238,7 @@
     const lvOpen = id => { try { return !g || !g.camp || g.camp.levelOpen(id); } catch (e) { return true; } };
     function top() {
       const P = progress(), blk = (ri, hard, label, a, b) => `<div class="${b > 0 && a >= b ? 'all' : ''}">${U.badge(a > 0 ? ri : -1, { cls: 'm', hard: hard && a > 0 })}<span>${esc(label)}</span><b>${a}<em>/ ${b}</em></b>${bar(a, b)}</div>`;
-      return `<div class="rkp">${blk(3, false, T('S 评价的地图'), P.s, P.maps)}${blk(3, true, T('困难难度 S 的地图'), P.hardS, P.maps)}${blk(3, false, T('全部地图全部指挥官 S'), P.coS, P.cells)}${P.levels ? blk(3, false, T('S 评价的战役关卡'), P.campS, P.levels) : blk(0, false, T('打过的地图'), P.played, P.maps)}</div>`;
+      return `<div class="rkp">${blk(3, false, T('S 评价的地图'), P.s, P.maps)}${blk(3, true, T('困难难度 S 的地图'), P.hardS, P.maps)}${blk(3, false, T('全部地图全部指挥官 S'), P.coS, P.cells)}${P.levels ? blk(3, false, T('S 评价的战役关卡'), P.campS, P.levels) : blk(0, false, T('完成过对局的地图'), P.played, P.maps)}</div>`;
     }
     const H3 = `<span class="t3">${['速度', '火力', '技术'].map(x => `<i>${esc(T(x))}</i>`).join('')}</span>`;
     const three = rec => `<div class="t3">${['speed', 'power', 'tech'].map(k => `<i class="${!rec ? 'no' : rec[k] >= 100 ? 'full' : ''}">${rec ? rec[k] : '–'}</i>`).join('')}</div>`;
@@ -249,7 +249,7 @@
         (kind === 'camp' ? '' : `<div class="l3">${[0, 1, 2].map(i => U.badge(rec ? rec.lv[i] : -1, { cls: 's', hard: i === 2 && rec && rec.lv[2] === 3 })).join('')}</div><div class="cs1"><span>${coS(rec)}<em> / ${cosAll().length}</em></span>${bar(coS(rec), cosAll().length)}</div>`) + `</div>`;
     }
     function mapTab() {
-      const ms = freeMaps(), hd = `<div class="rkrow hh"><span></span><span>${esc(T('地图'))}</span><span>${esc(T('最高分'))}</span><span>${esc(T('最少天数 / 标准'))}</span>${H3}<span class="l3">${LVN.map(x => `<i>${esc(T(x, null, 'diff'))}</i>`).join('')}</span><span>${esc(T('拿过 S 的指挥官'))}</span></div>`;
+      const ms = freeMaps(), hd = `<div class="rkrow hh"><span></span><span>${esc(T('地图'))}</span><span>${esc(T('最高分'))}</span><span>${esc(T('最少天数 / 标准'))}</span>${H3}<span class="l3">${LVN.map(x => `<i>${esc(T(x, null, 'diff'))}</i>`).join('')}</span><span>${esc(T('获得 S 评价的指挥官'))}</span></div>`;
       let h = hd;
       for (let k = 0; k < 4; k++) { const inG = ms.filter(m => grpOf(m) === k); if (!inG.length) continue;
         h += `<div class="rkg">${esc(T(GN[k], null, 'size'))}<small>${esc(T('S 评价 {a}/{b}', { a: inG.filter(m => R.top(R.record('map', m.name)) === 3).length, b: inG.length }))}</small></div>`;

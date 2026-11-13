@@ -267,7 +267,7 @@
   const vnone = () => `<div class="vb none">${esc(T('无'))}</div>`;
   function unitText(k) {
     const U = UN()[k], TT = TR(), out = [U.desc || ''], hide = HIDE_T.filter(t => TT[t]).map(tname);
-    if (U.range && U.range[1] > 1) out.push(U.lob ? T('抛射：移动后仍可攻击。') : T('远程：移动后不可攻击，要攻击就不能移动。'));
+    if (U.range && U.range[1] > 1) out.push(U.lob ? T('抛射：移动后仍可攻击。') : T('远程：移动后不可攻击，只有不移动时才可以攻击。'));
     if (U.range && U.range[0] > 1) out.push(T('不可攻击相邻的敌方单位，受到相邻敌方单位攻击时也不可反击。'));
     if (U.cover != null && U.cover < 1) out.push(U.cover <= 0 ? T('攻击时无视目标的地形防御。') : T('攻击时，目标的地形防御按 {pct}% 计算。', { pct: Math.round(U.cover * 100) }));
     if (U.reveal) out.push(hide.length ? T('迷雾开启时，可发现周围 8 格{list}中的隐蔽单位。', { list: Kit.join(hide) }) : T('迷雾开启时，可发现周围 8 格中的隐蔽单位。'));
@@ -450,7 +450,7 @@
     // 每一段是一个完整的句子键；按有没有某种建筑 / 兵种分出来的几种说法，各写一个整句
     const add = (t, ls, ic) => { const l = ls.filter(Boolean); if (l.length) rules.push([t, l, ic || 'rules']); };
     add(T('胜负', null, 'tab'), [
-      T('占领一个阵营的司令部，或者击毁它的全部单位，这个阵营就败北。只剩一支队伍时，这支队伍获胜。'),
+      T('一个阵营的司令部被占领，或者全部单位被击毁时，这个阵营败北。只剩一支队伍时，这支队伍获胜。'),
       T('司令部被占领时，败北阵营的单位全部消失，建筑归占领方所有。全部单位被击毁时，这个阵营的建筑全部变为中立。'),
       T('设有天数上限时，到期后先比较各队的收入建筑数，再比较单位总造价。'),
     ], 'flag');
@@ -474,14 +474,14 @@
       zero.length ? T('{list}攻击时，无视目标的地形防御。', { list: namesOf(zero) }) : '',
     ], 'sword');
     add(T('反击', null, 'tab'), [
-      T('受到相邻敌方单位攻击的单位如果没有被击毁，就会反击，伤害按受到攻击后的 HP 计算。'),
+      T('受到相邻敌方单位攻击的单位如果没有被击毁，会反击，伤害按受到攻击后的 HP 计算。'),
       far.length ? T('受到不相邻的敌方单位攻击时不可反击。{list}受到相邻敌方单位攻击时也不可反击。', { list: namesOf(far) }) : T('受到不相邻的敌方单位攻击时不可反击。'),
       T('不可攻击对方兵种的单位也不可反击。'),
       has('fort') ? T('位于己方或中立{fort}的单位，受到的反击伤害减半。', { fort: tn('fort') }) : '',
     ], 'shield');
     add(T('远程', null, 'tab'), [
       ranged.length ? T('射程大于 1 的单位：{list}。', { list: namesOf(ranged) }) : '',
-      !ranged.length ? '' : lob.length ? T('远程单位移动后不可攻击，要攻击就不能移动。{list}例外，移动后仍可攻击。', { list: namesOf(lob) }) : T('远程单位移动后不可攻击，要攻击就不能移动。'),
+      !ranged.length ? '' : lob.length ? T('远程单位移动后不可攻击，只有不移动时才可以攻击。{list}例外，移动后仍可攻击。', { list: namesOf(lob) }) : T('远程单位移动后不可攻击，只有不移动时才可以攻击。'),
       has('fort') && has('mountain') ? T('{fort}上的远程单位、{mountain}上的步兵类远程单位射程 +1，两者不叠加。', { fort: tn('fort'), mountain: tn('mountain') })
         : has('fort') ? T('{fort}上的远程单位射程 +1，两者不叠加。', { fort: tn('fort') })
         : has('mountain') ? T('{mountain}上的步兵类远程单位射程 +1，两者不叠加。', { mountain: tn('mountain') }) : '',

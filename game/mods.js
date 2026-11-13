@@ -51,8 +51,8 @@
     try {
       if (!isObj(def)) throw E('register 要传一个对象');
       if (!str(def.id) || !/^[a-z0-9][a-z0-9-]*$/.test(def.id)) throw E('id 只能用小写字母、数字和连字符');
-      if (cur && def.id !== cur) throw E('id「{a}」和文件夹名「{b}」不一样', { a: def.id, b: cur });
-      if (byId[def.id] && byId[def.id].state !== 'pending') throw E('同一个 id 登记了两次');
+      if (cur && def.id !== cur) throw E('id「{a}」和文件夹名「{b}」不一致', { a: def.id, b: cur });
+      if (byId[def.id] && byId[def.id].state !== 'pending') throw E('同一个 id 重复登记');
       if (!str(def.name)) throw E('缺 name');
       if (!str(def.version)) throw E('缺 version');
       if (!M.versionOk(def.gameVersion)) throw E('适用版本 {a} 和游戏版本 {b} 对不上', { a: JSON.stringify(def.gameVersion), b: M.GAME_VERSION });
@@ -61,34 +61,34 @@
     } catch (err) { skip(id || '(no id)', errT(err)); }
   };
   function check(def) {
-    for (const k of ['maps', 'cos', 'langs']) if (def[k] != null && !Array.isArray(def[k])) throw E('{a} 要是数组', { a: k });
-    for (const k of ['i18n', 'balance', 'lore']) if (def[k] != null && !isObj(def[k])) throw E('{a} 要是对象', { a: k });
+    for (const k of ['maps', 'cos', 'langs']) if (def[k] != null && !Array.isArray(def[k])) throw E('{a} 必须是数组', { a: k });
+    for (const k of ['i18n', 'balance', 'lore']) if (def[k] != null && !isObj(def[k])) throw E('{a} 必须是对象', { a: k });
     for (const m of def.maps || []) {
       if (!isObj(m) || !str(m.name)) throw E('地图缺 name');
       const rows = m.rows || m.half;
-      if (!Array.isArray(rows) || !rows.length || rows.some(r => typeof r !== 'string' || r.length !== rows[0].length)) throw E('地图「{a}」的 rows / half 要是等宽的字符串数组', { a: m.name });
+      if (!Array.isArray(rows) || !rows.length || rows.some(r => typeof r !== 'string' || r.length !== rows[0].length)) throw E('地图「{a}」的 rows / half 必须是等宽的字符串数组', { a: m.name });
     }
     for (const c of def.cos || []) {
       if (!isObj(c) || !str(c.id) || !/^[a-z0-9_]+$/.test(c.id)) throw E('指挥官缺 id（小写字母、数字、下划线）');
       for (const k of ['name', 'title', 'power', 'desc', 'passive']) if (!str(c[k])) throw E('指挥官「{a}」缺 {b}', { a: c.id, b: k });
-      if (!(c.faction >= 1 && c.faction <= 5)) throw E('指挥官「{a}」的 faction 要是 1–5', { a: c.id });
-      if (c.mods != null && !Array.isArray(c.mods)) throw E('指挥官「{a}」的 mods 要是数组', { a: c.id });
+      if (!(c.faction >= 1 && c.faction <= 5)) throw E('指挥官「{a}」的 faction 必须是 1–5', { a: c.id });
+      if (c.mods != null && !Array.isArray(c.mods)) throw E('指挥官「{a}」的 mods 必须是数组', { a: c.id });
       for (const md of c.mods || []) {
         if (!isObj(md) || md.on == null) throw E('指挥官「{a}」的 mods 每项要有 on', { a: c.id });
-        for (const k in md) if (!MOD_KEYS.includes(k)) throw E('指挥官「{a}」的 mods 里有不认识的字段 {b}', { a: c.id, b: k });
-        for (const sel of [md.on, md.not]) if (typeof sel === 'string' && !CLASSES.includes(sel)) throw E('指挥官「{a}」的 mods 里有不认识的兵种类别 {b}', { a: c.id, b: sel });
+        for (const k in md) if (!MOD_KEYS.includes(k)) throw E('指挥官「{a}」的 mods 里有无法识别的字段 {b}', { a: c.id, b: k });
+        for (const sel of [md.on, md.not]) if (typeof sel === 'string' && !CLASSES.includes(sel)) throw E('指挥官「{a}」的 mods 里有无法识别的兵种类别 {b}', { a: c.id, b: sel });
       }
-      for (const k of ['rules', 'fx']) if (c[k] != null && !isObj(c[k])) throw E('指挥官「{a}」的 {b} 要是对象', { a: c.id, b: k });
+      for (const k of ['rules', 'fx']) if (c[k] != null && !isObj(c[k])) throw E('指挥官「{a}」的 {b} 必须是对象', { a: c.id, b: k });
       // 技能里的攻击、防御、移动要写成 [{ on, v }]（和游戏自带的一样）；写成一个数的话游戏不认，这里直接拦下
       for (const k of ['atk', 'def', 'move']) if (c.fx && c.fx[k] != null) {
         if (!Array.isArray(c.fx[k]) || c.fx[k].some(x => !isObj(x) || x.on == null || typeof x.v !== 'number')) throw E('指挥官「{a}」的 fx.{b} 要写成 [{ on, v }]', { a: c.id, b: k });
-        for (const x of c.fx[k]) if (typeof x.on === 'string' && !CLASSES.includes(x.on)) throw E('指挥官「{a}」的 fx.{b} 里有不认识的兵种类别 {c}', { a: c.id, b: k, c: x.on });
+        for (const x of c.fx[k]) if (typeof x.on === 'string' && !CLASSES.includes(x.on)) throw E('指挥官「{a}」的 fx.{b} 里有无法识别的兵种类别 {c}', { a: c.id, b: k, c: x.on });
       }
     }
     for (const l of def.langs || []) if (!isObj(l) || !str(l.id) || !str(l.name)) throw E('语言缺 id 或 name');
     const b = def.balance;
     if (b) {
-      for (const k in b) if (!['units', 'damage'].includes(k)) throw E('balance 里有不认识的字段 {a}', { a: k });
+      for (const k in b) if (!['units', 'damage'].includes(k)) throw E('balance 里有无法识别的字段 {a}', { a: k });
       for (const u in b.units || {}) for (const f in b.units[u]) if (!['cost', 'move', 'vision', 'range', 'ore'].includes(f)) throw E('balance.units.{a} 里不能改 {b}', { a: u, b: f });
     }
   }
@@ -96,13 +96,13 @@
   // ── 浏览器：写出各扩展的 <script> ──
   M._begin = id => { cur = id; entry(id); };
   M._fail = id => skip(id, tx('找不到 mods/{id}/mod.js', { id }));
-  M._end = id => { cur = null; const e = entry(id); if (e.state === 'pending') skip(id, tx('mod.js 没有调用 AWMods.register（脚本出错了，或者 id 写得不一样）')); };
+  M._end = id => { cur = null; const e = entry(id); if (e.state === 'pending') skip(id, tx('mod.js 没有调用 AWMods.register（脚本出错，或者 id 不一致）')); };
   M.base = 'mods/';
   M.ids = () => (Array.isArray(root.AWModList) ? root.AWModList.filter((x, i, a) => str(x) && a.indexOf(x) === i) : []);
   M.writeTags = function () {
     if (!root.document || !root.document.write) return;
     for (const id of M.ids()) {
-      if (!/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(id)) { skip(id, tx('扩展 id 里有不能用的字符')); continue; }
+      if (!/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(id)) { skip(id, tx('扩展 id 里有不能使用的字符')); continue; }
       root.document.write('<script>AWMods._begin(' + JSON.stringify(id) + ')<\/script><script src="' + M.base + id + '/mod.js" onerror="AWMods._fail(' + JSON.stringify(id).replace(/"/g, '&quot;') + ')"><\/script><script>AWMods._end(' + JSON.stringify(id) + ')<\/script>');
     }
   };
@@ -155,8 +155,8 @@
       for (const u in b.units || {}) if (!D.UNITS[u]) throw E('balance.units 里没有这个兵种：{a}', { a: u });
       for (const a in b.damage || {}) { if (!D.DMG[a]) throw E('balance.damage 里没有这个兵种：{a}', { a: a }); for (const t in b.damage[a]) if (!(t in D.DMG[a])) throw E('balance.damage.{a} 里没有这个兵种：{b}', { a: a, b: t }); }
       for (const c of def.cos || []) {
-        for (const k in c.rules || {}) if (!RULE_KEYS[k]) throw E('指挥官「{a}」的 rules 里有不认识的效果 {b}', { a: c.id, b: k });
-        for (const k in c.fx || {}) if (!FX_KEYS[k]) throw E('指挥官「{a}」的 fx 里有不认识的效果 {b}', { a: c.id, b: k });
+        for (const k in c.rules || {}) if (!RULE_KEYS[k]) throw E('指挥官「{a}」的 rules 里有无法识别的效果 {b}', { a: c.id, b: k });
+        for (const k in c.fx || {}) if (!FX_KEYS[k]) throw E('指挥官「{a}」的 fx 里有无法识别的效果 {b}', { a: c.id, b: k });
         for (const md of c.mods || []) for (const sel of [md.on, md.not]) if (Array.isArray(sel)) for (const u of sel) if (!D.UNITS[u]) throw E('指挥官「{a}」的 mods 里没有这个兵种：{b}', { a: c.id, b: u });
         for (const u of (c.good || []).concat(c.bad || [])) if (!D.UNITS[u]) throw E('指挥官「{a}」的 good / bad 里没有这个兵种：{b}', { a: c.id, b: u });
       }

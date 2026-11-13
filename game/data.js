@@ -36,7 +36,7 @@
     reef: { name: '礁石', def: 2, note: '只有舰船可以进入，移动消耗 2，地形防御 2 星。' },
     wall: { name: '城墙', def: 0, note: '陆上单位与舰船不可通过，航空单位可飞越。' },
     // income：每回合收入金额（没有就不写）。全局金额在第三轮缩小到了十分之一：步兵 100、城市每回合 100。所有金额保持 10 的整数倍。note：给界面和图鉴看的特殊效果说明。
-    hq: { name: '司令部', def: 4, prop: true, income: 100, note: '每回合提供 100 资金。停留的己方陆上单位每回合恢复 2 HP（需支付资金）。被敌方占领就败北。' },
+    hq: { name: '司令部', def: 4, prop: true, income: 100, note: '每回合提供 100 资金。停留的己方陆上单位每回合恢复 2 HP（需支付资金）。被敌方占领时，己方败北。' },
     city: { name: '城市', def: 3, prop: true, income: 100, note: '每回合提供 100 资金。停留的己方陆上单位每回合恢复 2 HP（需支付资金）。' },
     factory: { name: '兵工厂', def: 3, prop: true, income: 100, note: '每回合提供 100 资金。可生产陆上单位。停留的己方陆上单位每回合恢复 2 HP（需支付资金）。' },
     airport: { name: '机场', def: 3, prop: true, income: 100, note: '每回合提供 100 资金。可生产航空单位。停留的己方航空单位与步兵类单位每回合恢复 2 HP（需支付资金）。' },
@@ -50,7 +50,7 @@
     shard_used: { name: D.RES.pit, def: 1, note: '已被拾取的' + D.RES.shard + '，与荒地相同。轮式车辆的移动消耗为 3。' },
     hospital: { name: '医院', def: 3, prop: true, note: '停留的己方步兵类单位每回合恢复 4 HP，相邻四格内的己方步兵类单位每回合恢复 2 HP（需支付资金）。' },
     // 潮闸：可占领，没有收入。战役里它的归属决定涨水快慢（rules.flood.gates）；别的对局里只是一座 4 星防御的建筑
-    gate: { name: '闸房', def: 4, prop: true, note: '大闸的机房。停留的己方步兵类单位每回合恢复 2 HP（需支付资金）。涨水的关卡里，每占有一座闸房，下一次涨水推迟 1 天；全部占有时停止涨水。' },
+    gate: { name: '闸房', def: 4, prop: true, note: '大闸的机房。停留的己方步兵类单位每回合恢复 2 HP（需支付资金）。在会涨水的关卡中，每占有一座闸房，下一次涨水推迟 1 天；全部占有时停止涨水。' },
     fort: { name: '碉堡', def: 4, prop: true, note: '停留的己方步兵类单位每回合恢复 2 HP（需支付资金）。位于己方或中立碉堡的单位受到的反击伤害减半，其中远程单位（含投弹手）射程 +1。' },
     // research：每座己方科研所每回合白给多少研究点（停档也给），每方最多算几座。rules.tech 关掉时它只是一座有防御的建筑
     lab: { name: '科研所', def: 3, prop: true, research: { pts: 3, max: 3 }, note: '每回合提供 3 研究点（每个阵营最多计 3 座）。停留的己方步兵类单位每回合恢复 2 HP（需支付资金）。可以在这里研究科技。' },
@@ -112,8 +112,8 @@
     trn: { name: '装甲列车', cost: 2800, ore: 4, move: 9, vision: 3, mt: 'rail', range: [1, 3], moveShot: { range: [1, 1] }, carry: { n: 2, kind: 'foot' }, from: 'factory', only: 5, desc: '只能在道路、桥梁和建筑上移动。射程 1–3，移动后只能攻击相邻目标。可搭载 2 个徒步的步兵类单位（摩托兵除外）。攻击与防御介于中型坦克和重型坦克之间。' },
     // ── 黑潮的精锐兵种（faction: 5：只有扮演黑潮的席位造得出来；四国的普通兵种黑潮照常能造）。比对应的普通兵种贵、强，各带一个特色 ──
     // after：攻击后还能再移动几格（不能再打、不能占领）；cloak：true = 不相邻就看不见（不开迷雾也算），'idle' = 上一个自己的回合没开过火时才这样
-    bgd: { name: '黑甲兵', cost: 300, ore: 2, move: 3, vision: 2, mt: 'foot', range: [1, 1], cap: true, from: 'factory', faction: 5, desc: '黑潮的重装步兵，可占领建筑。对步兵类单位和轻型车辆的伤害高于步兵，受到坦克的伤害明显低于步兵。' },
-    bht: { name: '深渊战车', cost: 2600, ore: 3, move: 5, vision: 2, mt: 'tread', range: [1, 1], after: 1, from: 'factory', faction: 5, desc: '黑潮的重型坦克，攻击和防御都高于重型坦克。攻击后可再移动 1 格（不可再次攻击）。' },
+    bgd: { name: '黑甲兵', cost: 300, ore: 2, move: 3, vision: 2, mt: 'foot', range: [1, 1], cap: true, from: 'factory', faction: 5, desc: '黑潮阵营的重装步兵，可占领建筑。对步兵类单位和轻型车辆的伤害高于步兵，受到坦克的伤害明显低于步兵。' },
+    bht: { name: '深渊战车', cost: 2600, ore: 3, move: 5, vision: 2, mt: 'tread', range: [1, 1], after: 1, from: 'factory', faction: 5, desc: '黑潮阵营的重型坦克，攻击和防御都高于重型坦克。攻击后可再移动 1 格（不可再次攻击）。' },
     btc: { name: '潮汐炮', cost: 2000, ore: 3, move: 4, vision: 1, mt: 'tread', range: [3, 7], from: 'factory', faction: 5, desc: '射程 3–7 的远程单位，伤害略高于火箭炮。移动后不可攻击。' },
     bnv: { name: '夜鸦', cost: 2600, ore: 3, move: 9, vision: 4, mt: 'air', air: true, range: [1, 1], cloak: true, from: 'airport', faction: 5, desc: '隐形的航空单位：敌方只有相邻时才能发现（迷雾关闭时也有效）。对航空单位伤害高，对陆上单位伤害中等。' },
     bds: { name: '潜渊舰', cost: 3000, ore: 4, move: 5, vision: 3, mt: 'ship', ship: true, range: [2, 5], cloak: 'idle', from: 'port', faction: 5, desc: '射程 2–5 的舰船，移动后不可攻击。上一个己方回合没有攻击时处于下潜状态：敌方只有相邻时才能发现（迷雾关闭时也有效）。' },
@@ -193,9 +193,9 @@
   // 和这一局军队用什么颜色无关。幅度都很小（5% 量级），指挥官个人的加成才是主体。mods 和指挥官的 mods 同一套结构；
   // cityIncome：每座城市的收入多几成（整回合收入取整到 100）。s.rules.coPassives = false 时一并关闭。
   D.FACTIONS = [null,
-    { name: '赤焰', research: { name: '工时制', desc: '每座兵工厂每回合额外提供 1 研究点，最多 4 研究点；研究经费是“停”时也有效。', factoryPts: 1, factoryMax: 4 }, culture: '钢铁与工厂的工业强国，信奉火力与装甲。', trait: '履带车辆防御 +5%；陆上单位在兵工厂的修理费 −20%。',
+    { name: '赤焰', research: { name: '工时制', desc: '每座兵工厂每回合额外提供 1 研究点，最多 4 研究点；研究经费选“停”档时仍然有效。', factoryPts: 1, factoryMax: 4 }, culture: '钢铁与工厂的工业强国，信奉火力与装甲。', trait: '履带车辆防御 +5%；陆上单位在兵工厂的修理费 −20%。',
       mods: [{ on: 'tread', def: 0.05 }, { on: 'land', repairOn: { factory: 0.8 } }] },
-    { name: '苍蓝', research: { name: '议会表决', desc: '每回合额外获得 5 研究点（研究经费是“停”时没有）。各档研究经费 +20%。', sub: 5, costMul: 1.2 }, culture: '海洋与天空的联邦，重视技术与后勤。', trait: '航空单位和舰船视野 +1；航空单位在机场、舰船在港口的修理费 −20%。',
+    { name: '苍蓝', research: { name: '议会表决', desc: '每回合额外获得 5 研究点（研究经费选“停”档时没有）。各档研究经费 +20%。', sub: 5, costMul: 1.2 }, culture: '海洋与天空的联邦，重视技术与后勤。', trait: '航空单位和舰船视野 +1；航空单位在机场、舰船在港口的修理费 −20%。',
       mods: [{ on: 'air', vision: 1, repairOn: { airport: 0.8 } }, { on: 'ship', vision: 1, repairOn: { port: 0.8 } }] },
     { name: '翠林', research: { name: '口口相传', desc: '各档研究经费 −50%，每回合研究点 −2；上回合新占领过建筑时（每座建筑每局只算一次），本回合研究点 +4。', costMul: 0.5, ptsAdj: -2, expand: 4 }, culture: '山林与雪原的游击之民，擅长地形与隐蔽。', trait: '步兵类单位造价 −5%；位于森林、山地的步兵类单位防御 +10%；中型坦克、重型坦克、火箭炮造价 +5%。',
       mods: [{ on: 'inf', cost: -0.05, defOn: { forest: 0.1, mountain: 0.1 } }, { on: ['med', 'hvy', 'rkt'], cost: 0.05 }] },
@@ -262,20 +262,20 @@
       passive: '武装直升机攻击 +40%、防御 +20%、造价 −20%。运输直升机移动力 +2、搭载数 +1。舰船攻击和防御 −20%。', good: ['cop', 'tcp'], bad: ['rec', 'tnk', 'med', 'hvy', 'art', 'gbt', 'dst', 'sub', 'bsh'],
       mods: [{ on: ['cop'], atk: 0.4, def: 0.2, cost: -0.2 }, { on: ['tcp'], move: 2, carry: 1 }, { on: 'ship', atk: -0.2, def: -0.2 }],
       fx: { again: 'heli', atk: [{ on: 'heli', v: 0.2 }, { on: 'all', v: 0.2 }], move: [{ on: 'all', v: 2 }], ai: 'attack' } },
-    { id: 'hawk', name: '苍柏', title: '狙击', group: '专精', faction: 3, power: '一击', desc: '本回合：狙击手、投弹手的攻击取最高运气，无视目标的地形防御。全军攻击 +30%。',
+    { id: 'hawk', name: '苍柏', title: '狙击', group: '专精', faction: 3, power: '一击', desc: '本回合：狙击手、投弹手攻击时，运气取最大值，并无视目标的地形防御。全军攻击 +30%。',
       passive: '狙击手射程 +1、攻击 +40%、造价 −20%，移动后可攻击，击毁目标后可再行动（每回合一次）。投弹手攻击 +25%，其他步兵类单位攻击 +15%。全军视野 +1。位于森林、山地的己方单位防御 +15%。', good: ['snp', 'grn'], bad: ['rec', 'tnk', 'med', 'hvy', 'art', 'rkt', 'aa'],
       mods: [{ on: ['snp'], range: 1, atk: 0.4, cost: -0.2 }, { on: ['grn'], atk: 0.25 }, { on: 'inf', not: ['snp', 'grn'], atk: 0.15 }, { on: 'all', vision: 1, defOn: { forest: 0.15, mountain: 0.15 } }],
       rules: { killAgain: ['snp'], moveFire: ['snp'] }, ai: { goodW: 1.6 },
       fx: { sure: ['snp', 'grn'], atk: [{ on: 'all', v: 0.3 }], ai: 'attack' } },
     { id: 'owl', name: '夜棠', title: '潜行', group: '奇策', faction: 3, power: '灯火管制', desc: '本回合：全军攻击 +20%。己方下回合开始前：敌方单位视野降为 1。迷雾关闭时，敌方只能发现自己单位 2 格内的己方单位。',
-      passive: '位于森林、废墟、礁石的己方单位攻击 +20%、防御 +20%，迷雾关闭时也隐蔽。位于平原、道路、桥梁、沙滩的己方单位防御 −5%。迷雾开启时全军视野 +2。己方单位移动中遇到隐蔽的敌方单位时停下，但行动不结束。', good: ['inf', 'mech', 'snp', 'grn', 'art'], bad: ['hvy', 'med'],
+      passive: '位于森林、废墟、礁石的己方单位攻击 +20%、防御 +20%，迷雾关闭时也处于隐蔽状态。位于平原、道路、桥梁、沙滩的己方单位防御 −5%。迷雾开启时全军视野 +2。己方单位移动中遇到隐蔽的敌方单位时停止移动，但行动不结束。', good: ['inf', 'mech', 'snp', 'grn', 'art'], bad: ['hvy', 'med'],
       mods: [{ on: 'all', vision: 2, defOn: { forest: 0.2, ruins: 0.2, reef: 0.2, plain: -0.05, road: -0.05, bridge: -0.05, beach: -0.05 }, atkOn: { forest: 0.2, ruins: 0.2, reef: 0.2 } }], rules: { stealth: true, noAmbush: true },
       fx: { blackout: true, atk: [{ on: 'all', v: 0.2 }], ai: 'endturn' } },
-    { id: 'dice', name: '金不换', title: '运气', group: '奇策', faction: 4, power: '梭哈', desc: '本回合：己方攻击的运气判定三次取最高，全军攻击 +30%。第一次击毁敌方单位时返还 50% 技能槽。',
-      passive: '己方攻击的运气范围变为 0 至 +40（原来 0–9）。超过 9 的部分按对目标的基础伤害折算：基础伤害 50 时只算一半。', good: ['inf', 'rec', 'cop', 'gbt'], bad: ['hvy', 'bmb', 'bsh'],
+    { id: 'dice', name: '金不换', title: '运气', group: '奇策', faction: 4, power: '梭哈', desc: '本回合：己方攻击的运气判定三次，取最高值。全军攻击 +30%。第一次击毁敌方单位时，返还 50% 技能槽。',
+      passive: '己方攻击的运气范围变为 0 至 +40（原来 0–9）。运气超过 9 的部分按比例计入伤害：计入量 = 超出部分 × 基础伤害 ÷ 100（基础伤害超过 100 时按 100 计算）。', good: ['inf', 'rec', 'cop', 'gbt'], bad: ['hvy', 'bmb', 'bsh'],
       mods: [], rules: { luck: [0, 40] },
       fx: { luckBest: 3, atk: [{ on: 'all', v: 0.3 }], killMeter: 0.5, ai: 'attack' } },
-    { id: 'forge', name: '柳锻', title: '速建', group: '奇策', faction: 1, power: '加班', desc: '本回合：单位造价 −30%，每座生产建筑可生产 2 次（要先移走第一个单位）。',
+    { id: 'forge', name: '柳锻', title: '速建', group: '奇策', faction: 1, power: '加班', desc: '本回合：单位造价 −30%，每座生产建筑可生产 2 次。生产第二个单位前，要先把第一个单位移出建筑。',
       passive: '新生产的单位当回合可行动。所有单位造价 +10%。', good: ['inf', 'bik', 'tnk', 'cop'], bad: ['hvy', 'bmb', 'bsh'],
       mods: [{ on: 'all', cost: 0.1 }], rules: { freshBuild: true },
       fx: { costMul: 0.7, buildCap: 2, ai: 'build' } },
@@ -292,7 +292,7 @@
       mods: [], rules: { firstCounter: true, atkInit: -0.1 },
       fx: { counterMul: 2, def: [{ on: 'all', v: 0.2 }], ai: 'endturn' } },
     // ── 第三批 ──
-    { id: 'bolt', name: '霁羽', title: '防空', group: '专精', faction: 2, power: '天网', desc: '己方下回合开始前：敌方航空单位移动进己方防空车、防空导弹、战斗机的射程时，自动受到一次攻击（每个己方单位一次）。全军防御 +30%。',
+    { id: 'bolt', name: '霁羽', title: '防空', group: '专精', faction: 2, power: '天网', desc: '己方下回合开始前：敌方航空单位移动后进入己方防空车、防空导弹、战斗机的射程时，自动受到一次攻击（每个己方单位一次）。全军防御 +30%。',
       passive: '防空车、防空导弹、战斗机对航空单位伤害 +40%、视野 +2、造价 −25%。防空车对陆上单位伤害 +40%、防御 +15%、移动力 +1。直升机、攻击机、轰炸机攻击 −15%。', good: ['aa', 'sam', 'ftr'], bad: ['cop', 'atk', 'bmb'],
       mods: [{ on: ['aa', 'sam', 'ftr'], vs: { air: 0.4 }, vision: 2, cost: -0.25 }, { on: ['aa'], vs: { land: 0.4 }, def: 0.15, move: 1 }, { on: ['cop', 'atk', 'bmb'], atk: -0.15 }],
       ai: { goodW: 1, w: { aa: 2.2 } },
@@ -313,8 +313,8 @@
       passive: '己方单位在能进入的地形上移动消耗都是 1。步兵类单位移动力 +1。', good: ['rec', 'tnk', 'art', 'rkt', 'inf'], bad: ['cop', 'atk', 'bmb'],
       mods: [{ on: 'inf', move: 1 }], rules: { flatMove: true },
       fx: { chill: { move: -3, vision: -2 }, def: [{ on: 'all', v: 0.2 }], ai: 'endturn' } },
-    { id: 'toll', name: '商有余', title: '征收', group: '奇策', faction: 4, power: '加征', desc: '立即获得一整回合的收入。本回合：步兵类单位移动力 +1。',
-      passive: '占领值 ×1.5。每占领一座建筑获得 150 资金，敌方建筑再加 150。全军攻击 −10%。', good: ['inf', 'mech', 'bik'], bad: ['hvy', 'bmb', 'bsh'],
+    { id: 'toll', name: '商有余', title: '征收', group: '奇策', faction: 4, power: '加征', desc: '立即获得相当于一个回合的收入。本回合：步兵类单位移动力 +1。',
+      passive: '占领值 ×1.5。每占领一座建筑，获得 150 资金；占领的是敌方建筑时，再获得 150 资金。全军攻击 −10%。', good: ['inf', 'mech', 'bik'], bad: ['hvy', 'bmb', 'bsh'],
       mods: [{ on: 'inf', capture: 1.5 }, { on: 'all', atk: -0.1 }], rules: { capBonus: 150, capBonusFoe: 150 },
       fx: { incomeNow: 1, move: [{ on: 'inf', v: 1 }], ai: 'now' } },
     { id: 'ember', name: '枯桐', title: '死战', group: '奇策', faction: 3, power: '背水', desc: '本回合：HP 未满的己方单位攻击 +50%，全军移动力 +1。',
@@ -328,7 +328,7 @@
     // ── 黑潮（阵营 5，战役专用）。新规则键：regenAt { 地形: 每回合恢复 }、seeOn [地形]（迷雾下这些地形上的敌方单位始终可见，潜艇除外）、killBonus 击毁返还造价的几成、
     //    roadRun 回合开始时在道路、桥梁上的车辆本回合移动力加几、offRoad { on, atk } 不在道路、桥梁、建筑上时的攻击增减、hideProp 位于建筑时隐蔽的兵种类别
     //    新技能效果：surge 涨水一级、ebb 压制敌方舰船、buyout 收购、chill.road 敌方在道路和桥梁上的移动消耗增加、frame 让两家敌方互相打（fxAlt：只有一家敌方时换成这一组效果）
-    { id: 'abyss', name: '玄渊', title: '井长', group: '奇策', faction: 5, power: '开闸', desc: '打开大闸，涨水一级：与海洋相邻的沙滩、荒地、礁石、废墟变为海洋，上面的敌方陆上单位损失 3 HP 并被移到最近的空格。己方下回合开始前：全军防御 +20%。每局最多 2 次；不能涨水时，改为所有敌方单位各损失 1 HP。',
+    { id: 'abyss', name: '玄渊', title: '井长', group: '奇策', faction: 5, power: '开闸', desc: '打开大闸，涨水一级。与海洋相邻的沙滩、荒地、礁石、废墟变为海洋。位于这些格子的陆上单位被移到最近的空格，其中敌方单位损失 3 HP（不会被击毁）。己方下回合开始前：全军防御 +20%。每局最多涨水 2 次。不能涨水时，改为所有敌方单位各损失 1 HP（不会被击毁）。',
       passive: '各型坦克、深渊战车、装甲列车攻击 +15%。位于陨星矿、荒地、废墟的己方单位防御 +20%，每回合恢复 1 HP。己方陨星矿收入 +50%。', good: ['hvy', 'med', 'art', 'mech', 'trn'], bad: ['cop', 'atk', 'bmb'],
       mods: [{ on: 'all', defOn: { mine: 0.2, waste: 0.2, ruins: 0.2 } }, { on: ['tnk', 'med', 'hvy', 'bht', 'trn'], atk: 0.15 }], rules: { regenAt: { mine: 10, waste: 10, ruins: 10 }, mineBonus: 0.5 },
       fx: { surge: { dmg: 30, max: 2, fallback: 10 }, def: [{ on: 'all', v: 0.2 }], ai: 'endturn' } },
@@ -336,7 +336,7 @@
       passive: '舰船攻击 +20%、移动力 +1。远程单位攻击 +15%。己方单位在沙滩上的移动消耗为 1。迷雾开启时，海洋、沙滩、礁石上的敌方单位始终可见（潜艇除外）。', good: ['bsh', 'dst', 'gbt', 'lnd', 'inf'], bad: ['hvy', 'rkt'],
       mods: [{ on: 'ship', atk: 0.2, move: 1 }, { on: 'indirect', atk: 0.15 }], rules: { seeOn: ['sea', 'beach', 'reef'], flatOn: { all: ['beach'] } },
       fx: { ebb: { move: -3, noRepair: true }, atk: [{ on: 'ship', v: 0.2 }, { on: 'all', v: 0.2 }], move: [{ on: 'all', v: 2 }], ai: 'attack' } },
-    { id: 'coin', name: '玄铢', title: '掌柜', group: '奇策', faction: 5, power: '收购', desc: '买下最多 2 个与己方单位相邻的敌方车辆，先买贵的：每个的价格是「造价 × 剩余 HP ÷ 10」的一半，买下后立即归己方所有，当回合不能行动。带标记的单位、搭载着单位的运输单位、位于司令部的单位除外。一个都买不了时，改为获得回合收入的 50%。',
+    { id: 'coin', name: '玄铢', title: '掌柜', group: '奇策', faction: 5, power: '收购', desc: '买下与己方单位相邻的敌方车辆，最多 2 个，从价格高的开始买。买下的单位立即归己方所有，当回合不能行动。价格 = 造价 × 剩余 HP ÷ 10 × 50%。资金不够支付的单位不会买下。以下单位不能买：带标记的单位、搭载着单位的运输单位、位于司令部的单位、敌方阵营的最后一个单位。一个单位都没有买下时，改为获得回合收入的 50%。',
       passive: '所有单位造价 −15%。每击毁一个敌方单位，获得它造价 30% 的资金。', good: ['tnk', 'art', 'rec', 'aa'], bad: ['bsh', 'bmb'],
       mods: [{ on: 'all', cost: -0.15 }], rules: { killBonus: 0.3 },
       fx: { buyout: { max: 2, price: 0.5, fallback: 0.5 }, ai: 'buyout' } },
@@ -344,8 +344,8 @@
       passive: '车辆攻击 +10%，在道路、桥梁上防御 +15%。回合开始时位于道路、桥梁的车辆本回合移动力 +2。装甲列车造价 −20%。', good: ['trn', 'tnk', 'med', 'rec', 'art'], bad: ['cop', 'sub', 'inf'],
       mods: [{ on: 'vehicle', atk: 0.1, defOn: { road: 0.15, bridge: 0.15 } }, { on: ['trn'], cost: -0.2 }], rules: { roadRun: 2 },
       fx: { chill: { road: 2 }, atk: [{ on: 'vehicle', v: 0.3 }], ai: 'endturn' } },
-    { id: 'candle', name: '玄烛', title: '点灯', group: '奇策', faction: 5, power: '点灯', desc: '最多选 2 对相邻、分属不同敌方阵营的单位，让每一对互相攻击一次（不会被击毁，不积累技能槽）。没有这样的单位时，改为：本回合己方攻击 +20%、不受反击；己方下回合开始前，敌方视野 −2。',
-      passive: '位于建筑的己方步兵类单位隐蔽，迷雾关闭时也有效。步兵类单位攻击 +15%、占领值 ×1.5。迷雾开启时全军视野 +1。', good: ['inf', 'mech', 'snp', 'gbt', 'sub'], bad: ['hvy', 'med', 'bsh'],
+    { id: 'candle', name: '玄烛', title: '点灯', group: '奇策', faction: 5, power: '点灯', desc: '相邻且分属不同敌方阵营的两个单位互相攻击一次，最多 2 对，每个单位只算进一对。这次攻击不会击毁单位，也不积累技能槽。没有符合条件的单位时，改为以下效果。本回合：己方攻击 +20%，攻击时不受反击。己方下回合开始前：敌方视野 −2。',
+      passive: '位于建筑的己方步兵类单位处于隐蔽状态，迷雾关闭时也有效。步兵类单位攻击 +15%、占领值 ×1.5。迷雾开启时全军视野 +1。', good: ['inf', 'mech', 'snp', 'gbt', 'sub'], bad: ['hvy', 'med', 'bsh'],
       mods: [{ on: 'inf', capture: 1.5, atk: 0.15 }, { on: 'all', vision: 1 }], rules: { hideProp: 'inf' },
       fx: { frame: { pairs: 2 }, ai: 'attack' }, fxAlt: { chill: { vision: -2 }, atk: [{ on: 'all', v: 0.2 }], noCounter: 'all', ai: 'attack' } },
   ];
@@ -405,16 +405,16 @@
     // 赤焰 · 重工
     { id: 'red_h1', tree: 1, line: 'red_h', tier: 1, pts: 40, name: '流水线', desc: '车辆造价 −10%。', flavor: '一个人只拧一颗螺丝，拧一万遍。',
       mods: [{ on: 'vehicle', cost: -0.1 }] },
-    { id: 'red_h2', tree: 1, line: 'red_h', tier: 2, pts: 70, name: '淬火钢', desc: '轻型、中型、重型坦克防御 +15%。', flavor: '烧红，浸冷，再烧红。',
+    { id: 'red_h2', tree: 1, line: 'red_h', tier: 2, pts: 70, name: '淬火钢', desc: '各型坦克防御 +15%。', flavor: '烧红，浸冷，再烧红。',
       mods: [{ on: 'tank', def: 0.15 }] },
     { id: 'red_h3', tree: 1, line: 'red_h', tier: 3, pts: 120, name: '巨炉', desc: '每座兵工厂每回合可生产 2 个单位（要先把第一个单位移出建筑）；重型坦克造价 −20%。', flavor: '第一百四十一座高炉点火那天，炉城放了半天假。',
       mods: [{ on: ['hvy'], cost: -0.2 }], rules: { buildCapOn: { factory: 2 } } },
     // 赤焰 · 火力
     { id: 'red_f1', tree: 1, line: 'red_f', tier: 1, pts: 40, name: '射表修订', desc: '自行火炮、火箭炮、战列舰攻击 +10%。', flavor: '上次打偏的那一发，已经算进去了。',
       mods: [{ on: ['art', 'rkt', 'bsh'], atk: 0.1 }] },
-    { id: 'red_f2', tree: 1, line: 'red_f', tier: 2, pts: 70, name: '高爆弹', desc: '远程和抛射单位攻击时，目标的地形防御 −1 星。', flavor: '墙厚不厚，要看拿什么敲。',
+    { id: 'red_f2', tree: 1, line: 'red_f', tier: 2, pts: 70, name: '高爆弹', desc: '远程单位攻击时，目标的地形防御 −1 星。', flavor: '墙厚不厚，要看拿什么敲。',
       rules: { pierce: { on: 'indirect', stars: 1 } } },
-    { id: 'red_f3', tree: 1, line: 'red_f', tier: 3, pts: 120, name: '弹幕', desc: '远程和抛射单位攻击后，目标相邻四格内的敌方单位各受到本次伤害的 20%（不会被击毁；每个单位每回合因溅射最多损失 5 HP）。', flavor: '不用瞄，那一片都是。',
+    { id: 'red_f3', tree: 1, line: 'red_f', tier: 3, pts: 120, name: '弹幕', desc: '远程单位攻击后，目标相邻四格内的敌方单位各受到本次伤害的 20%（不会被击毁；每个单位每回合因溅射最多损失 5 HP）。', flavor: '不用瞄，那一片都是。',
       rules: { splashBy: 'indirect', splashPct: 0.2 } },
     // 苍蓝 · 航海
     { id: 'blue_n1', tree: 2, line: 'blue_n', tier: 1, pts: 40, name: '潮汐表', desc: '舰船移动力 +1。', flavor: '领航员家的孩子，先会看潮，后会走路。',
@@ -442,7 +442,7 @@
       mods: [{ on: 'inf', cost: -0.15 }] },
     { id: 'green_f2', tree: 3, line: 'green_f', tier: 2, pts: 70, name: '草药', desc: '步兵类单位每回合开始时恢复 1 HP。', flavor: '嚼碎了敷上，明天还能走。',
       rules: { regenOn: { inf: 10 } } },
-    { id: 'green_f3', tree: 3, line: 'green_f', tier: 3, pts: 120, name: '全寨出征', desc: '每经过 4 个己方回合，无单位停留的己方城市各免费出现一个步兵，每次最多 4 个，当回合可行动。', flavor: '木牌上写着：这一季，每户出一个人。',
+    { id: 'green_f3', tree: 3, line: 'green_f', tier: 3, pts: 120, name: '全寨出征', desc: '每经过 4 个己方回合，没有单位的己方城市各免费出现一个步兵，每次最多 4 个，当回合可行动。', flavor: '木牌上写着：这一季，每户出一个人。',
       rules: { levy: { every: 4, max: 4 } } },
     // 金沙 · 商路
     { id: 'gold_t1', tree: 4, line: 'gold_t', tier: 1, pts: 40, name: '关税', desc: '每座城市每回合收入 +10 资金。', flavor: '进城收一道，出城再收一道。',
@@ -504,7 +504,7 @@
   coTech('medic', 2, '按时吃饭', '满 HP 的己方单位没有攻击 −10% 的减益。', '查房的时候他会顺便问你吃了没有。答案影响出院时间。', { rules: { fullHpAtk: 0.1 } });
   ex('medic', '强化技能「急救」，其他效果保留。恢复量提高到 3 HP。复活最近被击毁的 2 个单位，各 4 HP。每个单位每局只能复活一次。', '送到他手上的人，都要活着下手术台。这次台子加了一张。', { fx: { heal: 30, revive: { n: 2, hp: 40 } } });
   coTech('bolt', 1, '回波', '防空导弹射程 +1。防空车、防空导弹、战斗机视野再 +1。', '她从回波里听得出型号和挂载。远一格的那种，声音闷一点。', { mods: [{ on: ['sam'], range: 1 }, { on: ['aa', 'sam', 'ftr'], vision: 1 }] });
-  coTech('bolt', 2, '打招呼', '每个敌方回合，第一个移动进己方防空导弹射程的敌方航空单位自动受到一次攻击。', '鸟可以过。别的要先打招呼，没打的她替它打。', { rules: { overwatch: { by: ['sam'], perTurn: 1 } } });
+  coTech('bolt', 2, '打招呼', '每个敌方回合，第一个移动后进入己方防空导弹射程的敌方航空单位自动受到一次攻击。', '鸟可以过。别的要先打招呼，没打的她替它打。', { rules: { overwatch: { by: ['sam'], perTurn: 1 } } });
   ex('bolt', '强化技能「天网」，其他效果保留。被“天网”攻击的敌方航空单位立即结束行动。', '听见了，三点钟方向。然后三点钟方向就安静了。', { fx: { owStop: true } });
   coTech('shark', 1, '坐底', '上回合没有移动的潜艇，本回合第一次攻击 +20%。', '他在敌港外面趴了十九天。第二十天的事，报告里只写了一行。', { rules: { stillAtk: { on: ['sub'], atk: 0.2 } } });
   coTech('shark', 2, '下潜', '潜艇攻击后可用剩余移动力再移动。', '打完就往下走。上面的人还在找是哪个方向来的。', { rules: { hitRun: ['sub'] } });
@@ -516,7 +516,7 @@
   coTech('hawk', 1, '多带五发', '投弹手击毁目标后也可再行动（每回合一次）。', '听说要打四个月，他回去多带了五发。分给投弹手两发。', { rules: { killAgain: ['grn'] } });
   coTech('hawk', 2, '猎刀', '狙击手被相邻的敌方单位攻击时可以反击，伤害是正常的 50%。', '猎户随身带刀。平时剥皮用。', { rules: { closeCounter: { snp: 0.5 } } });
   ex('hawk', '强化技能「一击」，其他效果保留。本回合：每个狙击手击毁目标后可连续再行动，最多 3 次。', '三天里他说了两句话，都是报距离。这一回合他报了四次。', { fx: { killAgainMax: { snp: 3 } } });
-  coTech('owl', 1, '藏兵', '位于山地、沼泽的己方单位也隐蔽，规则与森林、废墟、礁石相同。', '每一片林子能藏多少人，她有数。现在山和泥塘也入了账。', { rules: { hideOn: ['mountain', 'swamp'] } });
+  coTech('owl', 1, '藏兵', '位于山地、沼泽的己方单位也处于隐蔽状态，规则与森林、废墟、礁石相同。', '每一片林子能藏多少人，她有数。现在山和泥塘也入了账。', { rules: { hideOn: ['mountain', 'swamp'] } });
   coTech('owl', 2, '看错了', '敌方单位遇伏时，伏击它的己方单位先攻击一次，不受反击。每个己方单位每个敌方回合一次。', '你看见的，是她想让你看见的。没看见的那个，离你一格。', { rules: { ambushShot: true } });
   ex('owl', '强化技能「灯火管制」，其他效果保留。持续时间延长到 2 个敌方回合。迷雾关闭时，敌方只能发现相邻的己方单位。生效期间技能槽不积累。', '没有月亮的夜晚她最喜欢。这次她订了两晚。', { fx: { turns: 2, blackoutR: 1 } });
   coTech('rider', 1, '下坡路', '攻击后再移动时，剩余移动力 +1。', '回程他都挑下坡走。省油，也省得回头看。', { rules: { hitRunPlus: 1 } });
@@ -536,7 +536,7 @@
   coTech('gold', 2, '利息', '回合开始时，每持有 500 资金获得 20 资金，最多 200（上限随地图规模变化）。', '这笔账，我们慢慢算。慢的那部分叫利息。', { rules: { interest: { per: 500, gain: 20, max: 200 } } });
   ex('gold', '强化技能「军费」，其他效果保留。每座建筑的资金提高到 100。本回合：单位造价再 −20%。', '发火不挣钱。发钱的时候顺便砍价，两头都挣。', { pw: { goldPer: 100 }, fx: { costMul: 0.8 } });
   coTech('dice', 1, '加注', '运气范围变为 −5 至 +55（原来 0 至 +40）。', '押大。桌上的筹码看着少，他又添了一摞。', { rules: { luck: [-5, 55] } });
-  coTech('dice', 2, '头彩', '每回合第一次主动攻击时，运气判定两次取较高。', '每晚第一把他都认真打。后面的看心情。', { rules: { firstLuck: 2 } });
+  coTech('dice', 2, '头彩', '每回合第一次主动攻击时，运气判定两次，取较高值。', '每晚第一把他都认真打。后面的看心情。', { rules: { firstLuck: 2 } });
   ex('dice', '强化技能「梭哈」，其他效果保留。本回合：运气范围 ×1.5。', '作战计划写在一张扑克牌背面。正面是什么牌，他说打完再翻。', { fx: { luckMul: 1.5 } });
   coTech('wheel', 1, '新轮胎', '侦察车在平原上的移动消耗为 1。', '议事会嫌他费轮胎。他申请了一批新的，理由栏写的是“旧的没了”。', { rules: { flatOn: { rec: ['plain'] } } });
   coTech('wheel', 2, '加急件', '侦察车可以占领建筑，占领值减半。不能使用导弹井。', '加急件送到，顺手把城门钥匙也签收了。', { rules: { capBy: ['rec'] }, mods: [{ on: ['rec'], capture: 0.5 }] });

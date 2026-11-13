@@ -37,7 +37,7 @@
     if (a.units || a.damage) out.push(T('数值调整 {n} 处', { n: (a.units || 0) + (a.damage || 0) }));
     if (a.langs) out.push(T('语言 {n} 种', { n: a.langs }));
     if (a.words) out.push(T('词条 {n} 条', { n: a.words }));
-    return out.length ? out.join(T('、')) : T('没有加内容');
+    return out.length ? out.join(T('、')) : T('没有添加内容');
   }
   // 弹出一块钢板面板。有 Kit 就用它的整屏层（进导航栈：确定 / 取消 / 点空白处都能关，右下角一个金色主按钮）；没有 Kit（界面没加载）时退回一个最简单的层
   let scr = null;
@@ -91,7 +91,7 @@
     try {
       const A = root.AWSave; if (!A || !A.check) return;
       const c = A.check(); if (!c.has || !c.missing.length) return;
-      panel('<h2>' + esc(T('存档需要扩展')) + '</h2><div class="txt">' + esc(T('上一局用了这些扩展，现在没有启用，所以不能继续：{list}。存档还在，重新启用这些扩展后就能继续。', { list: c.missing.map(x => x.id + ' ' + (x.version || '')).join(T('、')) })) + '</div>', '知道了');
+      panel('<h2>' + esc(T('存档需要扩展')) + '</h2><div class="txt">' + esc(T('上一局使用了这些扩展，现在没有启用，所以不能继续：{list}。存档仍然保留，重新启用这些扩展后可以继续。', { list: c.missing.map(x => x.id + ' ' + (x.version || '')).join(T('、')) })) + '</div>', '知道了');
     } catch (e) { /* 忽略 */ }
   }
   // 地图列表里标出哪张图是扩展带来的：接在简介后面。换语言时数据表会重新翻一遍，所以每次换完再接一次
