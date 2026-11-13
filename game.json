@@ -24,12 +24,19 @@
     {
       "src": "store/shot-1.jpg",
       "caption": {
-        "en": "A battle on day one",
-        "zh": "第 1 天的战场"
+        "en": "Blue squares show where the tank can go; the arrow is its path",
+        "zh": "蓝色格子是坦克能到的地方，箭头是它要走的路线"
       }
     },
     {
       "src": "store/shot-2.jpg",
+      "caption": {
+        "en": "After the move: choose what the unit does",
+        "zh": "走到位置后，选这支部队做什么"
+      }
+    },
+    {
+      "src": "store/shot-3.jpg",
       "caption": {
         "en": "The turn menu",
         "zh": "回合菜单"
@@ -88,5 +95,15 @@
       "en": "An extension is a folder with a mod.js that calls AWMods.register. The fields are in game/mods/README.md.",
       "zh": "一个扩展是一个文件夹，里面的 mod.js 调用 AWMods.register。字段见 game/mods/README.md。"
     }
-  }
+  },
+  "videos": [
+    {
+      "src": "store/play.mp4",
+      "poster": "store/play-poster.jpg",
+      "caption": {
+        "en": "One move: pick a unit, see its range, draw the path",
+        "zh": "走一步：选中部队，看移动范围，画出路线"
+      }
+    }
+  ]
 }

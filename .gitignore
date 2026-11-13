@@ -3,3 +3,4 @@ manual/
 *.tgz
 .DS_Store
 node_modules/
+.frames/
