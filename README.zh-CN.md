@@ -1,4 +1,4 @@
-# 潮汐前线（Tidemark）
+# 潮汐战线（Tidemark）
 
 [English](README.md)
 
@@ -8,7 +8,7 @@
 
 ## 怎么玩到
 
-在 DeepSeek Harness 里装好游戏商店（`dsh-game-store`），在商店里找到《潮汐前线》，点“安装”，再点“开始游戏”。
+在 DeepSeek Harness 里装好游戏商店（`dsh-game-store`），在商店里找到《潮汐战线》，点“安装”，再点“开始游戏”。
 
 ## 这个仓库里有什么
 
