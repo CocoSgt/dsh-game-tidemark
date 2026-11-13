@@ -80,6 +80,9 @@ if (missing.length) { console.error(`index.html names files that were not copied
 // The store icon is the game's own app icon (the one index.html names as apple-touch-icon).
 const appIcon = join(source, 'apple-touch-icon.png')
 if (existsSync(appIcon)) { mkdirSync(join(root, 'store'), { recursive: true }); cpSync(appIcon, join(root, 'store/icon.png')) }
+// The cover is drawn art kept in this repo (art/cover.png): a store cover shows no game interface.
+const art = join(root, 'art/cover.png')
+if (existsSync(art)) execFileSync('sips', ['-s', 'format', 'jpeg', '-s', 'formatOptions', '86', '-z', '1080', '1920', art, '--out', join(root, 'store/cover.jpg')], { stdio: 'ignore' })
 console.log(`game/    ${files} files, ${(bytes / 1048576).toFixed(1)} MB`)
 
 // --- manual/

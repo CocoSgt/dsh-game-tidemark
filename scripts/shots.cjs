@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * Take the store pictures from the packed game: store/cover.jpg and store/shot-*.jpg.
+ * Take the store screenshots and clip from the packed game: store/shot-*.jpg and store/play.mp4.
+ * The cover is drawn art (art/cover.png), not a capture; scripts/pack.mjs turns it into store/cover.jpg.
  * Run scripts/pack.mjs first. Uses one headless Chrome through the game's own tools/cdp.js.
  *
  *   node scripts/shots.cjs [--source <game folder>] [--lang en]
@@ -53,7 +54,6 @@ server.listen(0, '127.0.0.1', async () => {
     await b.size(1600, 900, 1)
     await b.goto(url)
     await sleep(5000)
-    await save(b, 'cover')
     await b.size(1280, 720, 1)
     await b.eval('__game.startGame()')
     await sleep(7000)
