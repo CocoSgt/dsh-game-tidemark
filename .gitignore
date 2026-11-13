@@ -1,0 +1,5 @@
+game/
+manual/
+*.tgz
+.DS_Store
+node_modules/

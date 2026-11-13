@@ -1,0 +1,44 @@
+{
+  "name": "dsh-game-tidemark",
+  "version": "0.1.0",
+  "description": "Tidemark (潮汐战线): a turn-based tactics game for the DSH Game Store. Where the tide leaves its mark.",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "author": "CocoSgt",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CocoSgt/dsh-game-tidemark.git"
+  },
+  "homepage": "https://dsh-game-store.com/games/tidemark/",
+  "keywords": [
+    "dsh",
+    "dsh-game",
+    "deepseek-harness",
+    "game",
+    "tactics",
+    "turn-based"
+  ],
+  "engines": {
+    "dsh": ">=0.2.2-rc.1"
+  },
+  "files": [
+    "game",
+    "manual",
+    "store",
+    "game.json",
+    "cordis.patch.yml",
+    "README.md",
+    "README.zh-CN.md",
+    "LICENSE.md"
+  ],
+  "scripts": {
+    "pack:game": "node scripts/pack.mjs",
+    "shots": "node scripts/shots.cjs"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "dshGame": "./game.json",
+  "icon": "./store/icon.png"
+}

@@ -1,0 +1,75 @@
+{
+  "spec": 1,
+  "id": "tidemark",
+  "name": {
+    "en": "Tidemark",
+    "zh": "潮汐战线"
+  },
+  "tagline": {
+    "en": "Where the tide leaves its mark.",
+    "zh": "潮水到过的地方，都会留下痕迹。"
+  },
+  "summary": {
+    "en": "Classic turn-based strategy: build, capture and push on land, sea and air.",
+    "zh": "经典 SLG 回合制战棋：造兵、占城、推司令部，陆海空三军同场。"
+  },
+  "author": {
+    "name": "CocoSgt",
+    "url": "https://github.com/CocoSgt"
+  },
+  "entry": "game/index.html",
+  "icon": "store/icon.png",
+  "cover": "store/cover.jpg",
+  "screenshots": [
+    {
+      "src": "store/shot-1.jpg",
+      "caption": {
+        "en": "A battle on day one",
+        "zh": "第 1 天的战场"
+      }
+    },
+    {
+      "src": "store/shot-2.jpg",
+      "caption": {
+        "en": "The turn menu",
+        "zh": "回合菜单"
+      }
+    }
+  ],
+  "about": {
+    "en": "store/about.en.md",
+    "zh": "store/about.zh.md"
+  },
+  "manual": {
+    "zh": "manual/index.html"
+  },
+  "languages": [
+    "zh-CN",
+    "zh-TW",
+    "en",
+    "ja",
+    "ko",
+    "es",
+    "fr",
+    "de",
+    "pt-BR",
+    "ru"
+  ],
+  "controls": [
+    "keyboard",
+    "mouse",
+    "touch",
+    "gamepad"
+  ],
+  "players": {
+    "min": 1,
+    "max": 4
+  },
+  "content": {
+    "rating": "everyone",
+    "notes": {
+      "en": "Cartoon war between pixel-art armies. No blood.",
+      "zh": "像素风格的卡通战争，没有血腥画面。"
+    }
+  }
+}
