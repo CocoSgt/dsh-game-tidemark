@@ -98,6 +98,14 @@
   },
   "videos": [
     {
+      "src": "store/trailer.mp4",
+      "poster": "store/trailer-poster.jpg",
+      "caption": {
+        "en": "Trailer",
+        "zh": "宣传片"
+      }
+    },
+    {
       "src": "store/play.mp4",
       "poster": "store/play-poster.jpg",
       "caption": {
