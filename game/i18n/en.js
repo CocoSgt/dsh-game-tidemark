@@ -2278,7 +2278,6 @@ AWI18n.add('en', {
   '结局': 'Ending',
   '撤回': 'Undo',
   '保留强化': 'Boost kept',
-  '失去强化': 'Boost lost',
   '已取消生产': 'Production canceled',
 });
 
@@ -2707,7 +2706,7 @@ AWI18n.add('en', {
   '阵营 2 条科技线的第 3 级只能选一条。': 'Only one of the Level 3 techs on the 2 faction tech lines can be chosen.',
   '陆上单位结束移动停留在{shard}上就能拾取，获得 {min}–{max} 份（每个碎片堆在开局时随机决定），这一格变为{pit}。航空单位不拾取。': 'A ground unit that ends its move on a {shard} picks it up and gains {min}–{max} Shards (set at random for each pile at the start of the match), and the space becomes a {pit}. Air units do not pick it up.',
   '{name}已采完，变为山地': '{name} is depleted and has become a Mountain',
-  '两个单位合并时，双方都是强化单位才保留强化。': 'When two units join, the boost is kept only if both are boosted units.',
+  '两个单位合并时，只要有一方是强化单位，合并后就是强化单位。双方都是强化单位时，返还其中一个单位的强化价。': 'When two units merge, the result is boosted if either one was boosted. If both were boosted, one unit\'s boost price is refunded.',
   '可以在开局规则里关闭{res}。': 'You can turn off {res} in the match rules.',
   '刚生产的单位，在做下一个动作之前可以按取消键撤回，资金和{res}全额返还。': 'A unit you just built can be taken back with the cancel button before your next action. Funds and {res} are refunded in full.',
   '单位移动后如果没有遇伏，也没有发现新的敌方单位，可以按取消键撤回这一步。': 'If a unit moved without being ambushed and without revealing a new enemy unit, you can take that move back with the cancel button.',

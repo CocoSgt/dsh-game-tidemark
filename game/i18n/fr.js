@@ -2306,7 +2306,6 @@ AWI18n.add('fr', {
   '结局': 'Fin',
   '撤回': 'Annuler',
   '保留强化': 'Renfort conservé',
-  '失去强化': 'Renfort perdu',
   '已取消生产': 'Production annulée',
 });
 
@@ -2724,7 +2723,7 @@ AWI18n.add('fr', {
   '阵营 2 条科技线的第 3 级只能选一条。': 'Entre les niveaux 3 des 2 lignes de faction, un seul choix possible.',
   '陆上单位结束移动停留在{shard}上就能拾取，获得 {min}–{max} 份（每个碎片堆在开局时随机决定），这一格变为{pit}。航空单位不拾取。': 'Une unité terrestre qui termine son déplacement sur une case {shard} ramasse le tas et gagne {min}–{max} unités (quantité tirée au hasard pour chaque tas en début de partie) ; la case devient : {pit}. Les unités aériennes ne ramassent rien.',
   '{name}已采完，变为山地': '{name} épuisée : devenue une montagne',
-  '两个单位合并时，双方都是强化单位才保留强化。': 'Quand deux unités fusionnent, le renfort n\'est conservé que si les deux unités l\'avaient.',
+  '两个单位合并时，只要有一方是强化单位，合并后就是强化单位。双方都是强化单位时，返还其中一个单位的强化价。': 'Quand deux unités fusionnent, le résultat est renforcé si l\'une des deux l\'était. Si les deux l\'étaient, le coût de renfort d\'une unité est remboursé.',
   '可以在开局规则里关闭{res}。': 'Les règles de début de partie permettent de désactiver la ressource {res}.',
   '刚生产的单位，在做下一个动作之前可以按取消键撤回，资金和{res}全额返还。': 'Une unité tout juste produite peut être annulée avec le bouton d\'annulation avant l\'action suivante ; fonds et {res} sont intégralement rendus.',
   '单位移动后如果没有遇伏，也没有发现新的敌方单位，可以按取消键撤回这一步。': 'Si une unité s\'est déplacée sans tomber dans une embuscade ni repérer de nouvelle unité ennemie, ce déplacement peut lui aussi être annulé.',

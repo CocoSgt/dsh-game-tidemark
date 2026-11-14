@@ -127,6 +127,7 @@
         units: [
           { seat: 1, type: 'art', at: [3, 8] },
         ],
+        owners: [{ at: [15, 0], seat: 0 }], // 沧澜的一座城市开局是空的
         goal: '占领岬角顶端的灯塔（雷达塔），或占领敌方司令部。',
         win: [{ type: 'capture', at: [[13, 10]] }, { type: 'hq' }, { type: 'rout' }],
         lose: [{ type: 'loseHq' }, { type: 'routed' }],
@@ -242,11 +243,11 @@
         highlight: '只带五发子弹的神枪手；燕烽头一回知道，有的仗是等赢的。',
         map: { file: 'maps/90-classic.js', name: '鹰愁走廊' },
         sides: [
-          { seat: 1, faction: 1, team: 1, role: 'player', cos: ['storm', 'blitz'], funds: 600 },
+          { seat: 1, faction: 1, team: 1, role: 'player', cos: ['storm', 'blitz'], funds: 1000 },
           { seat: 2, faction: 3, team: 2, role: 'enemy', co: 'hawk', ai: 'easy' },
         ],
         rules: { fog: false, powers: true, tech: false },
-        owners: [{ at: [7, 4], seat: 1 }, { at: [14, 4], seat: 1 }],
+        owners: [{ at: [7, 4], seat: 1 }, { at: [14, 4], seat: 1 }, { at: [20, 2], seat: 0 }, { at: [20, 5], seat: 0 }], // 苍柏的两座城市开局是空的：少一点兵来抢塔
         units: [
           { seat: 1, type: 'art', at: [4, 5] },
           { seat: 1, type: 'rec', at: [3, 2] },
@@ -370,13 +371,14 @@
         map: { file: 'maps/50-金砂矿谷.js', name: '金砂矿谷' },
         sides: [
           { seat: 1, faction: 1, team: 1, role: 'player', cos: ['forge', 'blitz', 'storm', 'guard'] },
-          { seat: 2, faction: 4, team: 2, role: 'enemy', co: 'nomad', ai: 'normal' },
+          { seat: 2, faction: 4, team: 2, role: 'enemy', co: 'nomad', ai: 'easy', funds: 0 },
         ],
         rules: { fog: false, powers: true, tech: true, startFunds: 600 },
+        owners: [{ at: [23, 9], seat: 0 }, { at: [22, 10], seat: 0 }], // 满庭芳的两座城市开局是空的
         goal: '第 14 天结束前，同时占有 3 座陨星矿。占领敌方司令部也算胜利。',
         win: [{ type: 'own', kind: 'mine', count: 3 }, { type: 'hq' }],
         lose: [{ type: 'timeout', day: 14 }, { type: 'loseHq' }, { type: 'routed' }],
-        difficulty: 3,
+        difficulty: 2,
         teach: ['研究经费与科技', '陨星矿的收入是城市的 2 倍', '限期目标', '生产节奏'],
         unlock: { cos: ['forge', 'nomad'], maps: ['金砂矿谷'], codex: [] },
         dialog: {
@@ -790,7 +792,7 @@
         highlight: '玄朔打开水坝放水的那一刻，沧澜等的就是这个；两个对头第一次配合。',
         map: { file: 'maps/60-双子湖会战.js', name: '双子湖会战' },
         sides: [
-          { seat: 1, faction: 5, team: 2, role: 'enemy', co: 'moon', ai: 'hard' },
+          { seat: 1, faction: 5, team: 2, role: 'enemy', co: 'moon', ai: 'normal', funds: 400 },
           {
             seat: 2,
             faction: 2,
@@ -801,25 +803,10 @@
           },
         ],
         rules: { fog: false, powers: true, tech: true, startFunds: 1200, flood: { fromDay: 8, every: 2 } },
-        reinforce: [
-          {
-            when: { type: 'day', day: 8 },
-            seat: 1,
-            units: [
-              { type: 'bds', at: [17, 5] },
-              { type: 'dst', at: [18, 5] },
-              { type: 'gbt', at: [16, 5] },
-              { type: 'gbt', at: [19, 5] },
-              { type: 'lnd', at: [13, 5] },
-              { type: 'dst', at: [17, 13] },
-              { type: 'gbt', at: [18, 13] },
-            ],
-          },
-        ],
         goal: '先和玄朔的舰队周旋。第 8 天起他打开上游的水坝放水：同时占有运河城的两座船闸港，把水坝关上。限 18 天。',
         win: [{ type: 'capture', at: [[16, 8], [15, 11]], fromDay: 8 }],
         lose: [{ type: 'timeout', day: 18 }, { type: 'loseHq' }, { type: 'routed' }],
-        difficulty: 5,
+        difficulty: 4,
         teach: ['打到一半目标改变', '涨水：低处的格子变为海', '第三方进场：敌方的敌方', '船闸港'],
         unlock: { cos: [], maps: ['双子湖会战'], codex: ['moon'] },
         dialog: {
@@ -1491,7 +1478,7 @@
         map: { file: 'maps/90-classic.js', name: '碎星群岛' },
         sides: [
           { seat: 1, faction: 2, team: 1, role: 'player', cos: ['heli', 'owl', 'blitz'], mixed: true },
-          { seat: 2, faction: 5, team: 2, role: 'enemy', co: 'coin', ai: 'hard' },
+          { seat: 2, faction: 5, team: 2, role: 'enemy', co: 'coin', ai: 'normal' },
         ],
         rules: { fog: true, powers: true, tech: true, startFunds: 600 },
         units: [
@@ -1723,7 +1710,7 @@
           { seat: 1, faction: 1, team: 1, role: 'player', cos: ['blitz', 'forge', 'storm', 'pyro'] },
           { seat: 2, faction: 5, team: 2, role: 'enemy', co: 'anvil', ai: 'hard' },
           { seat: 3, faction: 4, team: 1, role: 'ally', co: 'wheel', ai: 'normal' },
-          { seat: 4, faction: 5, team: 2, role: 'enemy', co: 'coin', ai: 'hard' },
+          { seat: 4, faction: 5, team: 2, role: 'enemy', co: 'coin', ai: 'normal' },
         ],
         rules: { fog: false, powers: true, tech: true, startFunds: 1000 },
         units: [

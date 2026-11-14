@@ -2306,7 +2306,6 @@ AWI18n.add('es', {
   '结局': 'Final',
   '撤回': 'Deshacer',
   '保留强化': 'Conserva el refuerzo',
-  '失去强化': 'Pierde el refuerzo',
   '已取消生产': 'Producción cancelada',
 });
 
@@ -2730,7 +2729,7 @@ AWI18n.add('es', {
   '阵营 2 条科技线的第 3 级只能选一条。': 'Del nivel 3 de las 2 líneas de facción solo se puede elegir uno.',
   '陆上单位结束移动停留在{shard}上就能拾取，获得 {min}–{max} 份（每个碎片堆在开局时随机决定），这一格变为{pit}。航空单位不拾取。': 'Una unidad terrestre que termina su movimiento en una casilla de {shard} recoge su contenido: se obtienen {min}–{max} fragmentos (cantidad fijada al azar para cada montón al inicio de la partida) y la casilla pasa a ser {pit}. Las unidades aéreas no recogen.',
   '{name}已采完，变为山地': '{name} se ha agotado y se ha convertido en montaña',
-  '两个单位合并时，双方都是强化单位才保留强化。': 'Al unir dos unidades, el refuerzo solo se conserva si las dos son unidades reforzadas.',
+  '两个单位合并时，只要有一方是强化单位，合并后就是强化单位。双方都是强化单位时，返还其中一个单位的强化价。': 'Al fusionar dos unidades, el resultado queda reforzado si cualquiera de las dos lo estaba. Si ambas estaban reforzadas, se devuelve el coste de refuerzo de una de ellas.',
   '可以在开局规则里关闭{res}。': 'En las reglas de inicio se puede desactivar este recurso ({res}).',
   '刚生产的单位，在做下一个动作之前可以按取消键撤回，资金和{res}全额返还。': 'Una unidad recién producida se puede deshacer con el botón de cancelar antes de hacer la siguiente acción; se devuelven todos los fondos y {res}.',
   '单位移动后如果没有遇伏，也没有发现新的敌方单位，可以按取消键撤回这一步。': 'Si una unidad se movió sin caer en una emboscada y sin descubrir unidades enemigas nuevas, ese movimiento se puede deshacer con el botón de cancelar.',

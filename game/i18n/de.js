@@ -2282,7 +2282,6 @@ AWI18n.add('de', {
   '结局': 'Ende',
   '撤回': 'Zurücknehmen',
   '保留强化': 'Verstärkung bleibt',
-  '失去强化': 'Verstärkung verloren',
   '已取消生产': 'Produktion abgebrochen',
 });
 
@@ -2701,7 +2700,7 @@ AWI18n.add('de', {
   '阵营 2 条科技线的第 3 级只能选一条。': 'Bei den 2 Fraktionslinien ist von Stufe 3 nur eine wählbar.',
   '陆上单位结束移动停留在{shard}上就能拾取，获得 {min}–{max} 份（每个碎片堆在开局时随机决定），这一格变为{pit}。航空单位不拾取。': 'Beendet eine Bodeneinheit ihre Bewegung auf dem Feld „{shard}“, sammelt sie {min}–{max} Splitter auf (für jeden Haufen zu Spielbeginn zufällig festgelegt); das Feld wird zu „{pit}“. Lufteinheiten sammeln nichts auf.',
   '{name}已采完，变为山地': '{name} ist erschöpft und wird zu Gebirge',
-  '两个单位合并时，双方都是强化单位才保留强化。': 'Vereinen sich zwei Einheiten, bleibt die Verstärkung nur erhalten, wenn beide verstärkt sind.',
+  '两个单位合并时，只要有一方是强化单位，合并后就是强化单位。双方都是强化单位时，返还其中一个单位的强化价。': 'Werden zwei Einheiten zusammengelegt, ist das Ergebnis verstärkt, sobald eine der beiden verstärkt war. Waren beide verstärkt, wird der Verstärkungspreis einer Einheit erstattet.',
   '可以在开局规则里关闭{res}。': 'In den Startregeln kannst du {res} abschalten.',
   '刚生产的单位，在做下一个动作之前可以按取消键撤回，资金和{res}全额返还。': 'Eine frisch produzierte Einheit kannst du vor deiner nächsten Aktion mit der Abbrechen-Taste zurücknehmen; Geld und {res} bekommst du voll zurück.',
   '单位移动后如果没有遇伏，也没有发现新的敌方单位，可以按取消键撤回这一步。': 'Hat eine Einheit gezogen, ohne in einen Hinterhalt zu geraten oder neue feindliche Einheiten zu entdecken, kannst du diesen Schritt mit der Abbrechen-Taste zurücknehmen.',

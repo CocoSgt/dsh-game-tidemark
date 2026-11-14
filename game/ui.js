@@ -1867,10 +1867,10 @@
     cur = { x: q.x, y: q.y };
     if (joinTr) {
       const gain = C.joinGain ? C.joinGain(S, q, joinTr) : 0, hp2 = Math.min(10, C.dispHp(q) + C.dispHp(joinTr));
-      items.push({ label: tt('合并', null, 'cmd'), icon: 'join', right: `HP ${C.dispHp(joinTr)}→${hp2}${gain ? '　+' + gain : ''}${(q.ore || joinTr.ore) && D.RES ? '　' + (q.ore && joinTr.ore ? Kit.t('保留强化') : Kit.t('失去强化')) : ''}`, fn: async () => {
+      items.push({ label: tt('合并', null, 'cmd'), icon: 'join', right: `HP ${C.dispHp(joinTr)}→${hp2}${gain ? '　+' + gain : ''}${(q.ore || joinTr.ore) && D.RES ? '　' + Kit.t('保留强化') + (C.joinOreBack && C.joinOreBack(S, q, joinTr) ? '　+' + C.joinOreBack(S, q, joinTr) + ' ' + D.RES.short : '') : ''}`, fn: async () => {
         const o = joinTr; if (await commit() !== 'ok') return;
         let r = null; if (S.units.includes(o) && C.canJoin(S, q, o)) r = C.join(S, q, o); else q.moved = true;
-        if (r) { sfx.cap ? sfx.cap() : sfx.ok(); addFx('heal', o.x, o.y, 700); if (r.gain) popup(o, '+' + r.gain, 'gold'); }
+        if (r) { sfx.cap ? sfx.cap() : sfx.ok(); addFx('heal', o.x, o.y, 700); if (r.gain) popup(o, '+' + r.gain, 'gold'); if (r.oreBack && D.RES) setTimeout(() => popup(o, '+' + r.oreBack + ' ' + D.RES.short, 'gold'), r.gain ? 450 : 0); }
         done();
       } });
     } else if (loadTr) {

@@ -2250,7 +2250,9 @@
     const over = Math.max(0, C.dispHp(u) + C.dispHp(o) - 10);
     return Math.round(over * C.costOf(s, u.owner, u.type) / 10 / 10) * 10;
   };
-  // u 并进 o：u 消失，o 本回合行动结束。返回 { gain }
+  // 合并时退回多少碎片：两个都是强化单位时，退回一个单位的强化价
+  C.joinOreBack = function (s, u, o) { return u.ore && o.ore ? (D.UNITS[o.type].ore || 0) : 0; };
+  // u 并进 o：u 消失，o 本回合行动结束。返回 { gain, oreBack }
   C.join = function (s, u, o) {
     if (!C.canJoin(s, u, o)) return null;
     const gain = C.joinGain(s, u, o);
@@ -2258,10 +2260,12 @@
     s.units.splice(s.units.indexOf(u), 1);
     o.hp = Math.min(100, (C.dispHp(o) + C.dispHp(u)) * 10);
     o.stars = Math.max(o.stars || 0, u.stars || 0);
-    if (o.ore && !u.ore) delete o.ore; // 强化：两个都是强化的，合并后才保留
+    const oreBack = C.joinOreBack(s, u, o); // 强化：任一方是强化单位，合并后就是强化单位；两个都是强化单位时退回一个单位的强化价
+    if (u.ore && !o.ore) o.ore = u.ore;
+    if (oreBack) oreAdd(s, o.owner, oreBack);
     o.moved = true;
     s.funds[u.owner] += gain;
-    return { gain };
+    return { gain, oreBack };
   };
   C.load = function (s, u, tr) {
     if (D.TERRAIN[s.map.t[u.y][u.x]].prop) s.map.cap[u.y][u.x] = 20;
