@@ -1,4 +1,4 @@
-/* 《钢铁潮汐》像素美术 · 建筑模块
+/* 《潮汐战线》像素美术 · 建筑模块
  * window.AWArtBuildings[type](c, info)
  * 可画范围 x 0–32，y −16–32。只用整数坐标 fillRect。
  */

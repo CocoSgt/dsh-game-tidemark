@@ -1,4 +1,4 @@
-// 钢铁潮汐：规则核心 + 电脑 AI（不依赖浏览器，可在 node 里跑模拟）
+// 潮汐战线：规则核心 + 电脑 AI（不依赖浏览器，可在 node 里跑模拟）
 // 2–4 个阵营、可结盟，接口约定见 tools/MULTI-SPEC.md。state 是纯数据（s.ai 是电脑的临时缓存，存档时去掉）。
 (function (root) {
   const D = root.AWData || require('./data.js');
@@ -1665,7 +1665,7 @@
     }
     return atk;
   }
-  // 防守方的防御系数（0–0.9）。cover：进攻方把地形防御算几成（投弹手 0.5、喷火兵 0、其余 1）
+  // 防守方的防御系数（0–0.7）。cover：进攻方把地形防御算几成（投弹手 0.5、喷火兵 0、其余 1）
   // aType：进攻方的兵种（强化的防御加成看它；不传 = 不看进攻方，不含强化加成）
   function defFrac(s, d, cover, pierce, aType) {
     const Dd = D.UNITS[d.type], md = modOf(s, d.owner, d.type), fxD = fxOf(s, d.owner), rD = ruleOf(s, d.owner);
@@ -1678,7 +1678,7 @@
       (md.defOn && !Dd.air ? (md.defOn[dTerr] || 0) + (D.TERRAIN[dTerr].prop ? md.defOn.prop || 0 : 0) : 0) +
       (s.powerOn[d.owner] ? (s.co[d.owner] === 'wall' ? pwOf(s, d.owner).wallDef : s.co[d.owner] === 'tide' ? pwOf(s, d.owner).tideDef : s.co[d.owner] === 'iron' && CLS.tank(d.type) ? pwOf(s, d.owner).ironDef : 0) : 0) +
       fxSum(fxD.def, d.type, Dd);
-    return Math.min(def, 0.9);
+    return Math.min(def, 0.7); // 上限 70%：碉堡 + 石敢当 + 厚墙 + 老兵 + 强化叠到 90% 时一两辆车打不动（2026-11-14 下调）
   }
   // counter：这一下是不是反击（rules.atkInit 只管主动进攻）
   C.damage = function (s, a, d, luck, counter) {
@@ -1704,7 +1704,7 @@
       atk: U.range ? r4(atkMul(s, u, null, false) - 1) : 0, // 主动进攻时的攻击增减合计（0.3 = +30%）；不含只对某类目标生效的 vs和强化（强化只对强化价不高于自己的对手生效，见 C.oreEffects）
       counterAtk: U.range ? r4(atkMul(s, u, null, true) - 1) : 0, // 反击时的（和 atk 的差别只在 rules.atkInit）
       vs: m.vs, // { 目标类别: 攻击增减 } 或 null
-      def: r4(defFrac(s, u, 1)), // 防御合计（0–0.9）：地形 + 军衔 + 指挥官 + 技能。投弹手、喷火兵打它时地形那部分要打折，见 C.damage
+      def: r4(defFrac(s, u, 1)), // 防御合计（0–0.7）：地形 + 军衔 + 指挥官 + 技能。投弹手、喷火兵打它时地形那部分要打折，见 C.damage
       terrain: r4(0.1 * stars * C.dispHp(u) / 10), // 其中地形防御那一部分
       move: mp, moveBonus: mp - U.move, // 现在的移动力 / 比兵种基础值多多少（打完再移动的单位是剩余移动力）
       range: rg, rangeBonus: rg ? rg[1] - U.range[1] : 0,

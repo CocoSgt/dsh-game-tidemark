@@ -1,4 +1,4 @@
-// 钢铁潮汐：战役的世界地图选关（window.AWWorldUI(G, api)）。数据在 campaign.js 的 AWCampaign.world（regions / places / routes / acts / reveals），
+// 潮汐战线：战役的世界地图选关（window.AWWorldUI(G, api)）。数据在 campaign.js 的 AWCampaign.world（regions / places / routes / acts / reveals），
 // 图在 world.js（AWWorldArt：底图、四档潮水、隐藏层、云雾），叠放顺序见 tools/WORLD-ART.md。
 // 一张衡海全图铺满屏幕：据点是图上的节点（可打的有脉冲光圈和阵营旗，通关的插胜方小旗），路线按通关顺序画出，没到过的区域盖云雾，潮线随进度上涨。
 // 光标在据点间跳（方向键找那个方向上最近的据点，鼠标触屏直接点），选中弹一张小卡，确定进关前页。进新的一幕：镜头平移过去，旁白叠在地图上。

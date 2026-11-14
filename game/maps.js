@@ -1,4 +1,4 @@
-// 钢铁潮汐：地图总表。每张图一个文件，放在 maps/ 下，各自 push 进 AWMapList。
+// 潮汐战线：地图总表。每张图一个文件，放在 maps/ 下，各自 push 进 AWMapList。
 // 浏览器里由 index.html 在本文件之前用 <script> 逐个加载；node 里（模拟、测试）自动读取 maps/ 目录。
 (function (root) {
   if (typeof module !== 'undefined' && typeof require !== 'undefined') {

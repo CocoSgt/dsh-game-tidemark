@@ -1,4 +1,4 @@
-// 钢铁潮汐：地形物件与建筑素材（window.AWTiles）。由 tools/cut-tiles.js 从 concepts/tiles/*.png 生成，不要手改。
+// 潮汐战线：地形物件与建筑素材（window.AWTiles）。由 tools/cut-tiles.js 从 concepts/tiles/*.png 生成，不要手改。
 // 一格 = 48 逻辑像素；73 个物件共用一张 250 色调色板，索引色 + 行程编码，同步解码（没有“还没就绪”的状态）。
 // 接口：has(name) get(name, owner) → { w, h, pix: Uint32Array }　canvas(name, owner) → canvas。建筑按 owner 换色（0 中立 1 红 2 蓝 3 绿 4 黄 5 玄潮黑）。
 (function runtime(root, PALETTE, SPR, K) {

@@ -1,4 +1,4 @@
-// 钢铁潮汐：战役进度（通关记录、解锁的指挥官 / 地图 / 图鉴条目）和开关卡的入口。界面只调这里的接口。
+// 潮汐战线：战役进度（通关记录、解锁的指挥官 / 地图 / 图鉴条目）和开关卡的入口。界面只调这里的接口。
 // 进度存在 localStorage（没有或写不进去时只留在内存里，不报错）。依赖 campaign.js（AWCampaign）和 core.js（AWCore）。
 (function (root) {
   const KEY = 'steel-tide.campaign.v1';

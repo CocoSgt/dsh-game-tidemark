@@ -1,4 +1,4 @@
-// 钢铁潮汐：陆地地形像素画（window.AWArtGround）
+// 潮汐战线：陆地地形像素画（window.AWArtGround）
 // 每个函数签名 (c, info)：c 已平移到该格左上角，1 单位 = 1 逻辑像素，可画 x 0–32、y −8–32。
 // 规范见 tools/ART-SPEC.md。只用整数坐标 fillRect。
 (function (root) {

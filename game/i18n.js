@@ -1,4 +1,4 @@
-// 钢铁潮汐：多语言底层（全局 AWI18n）。说明见 tools/I18N.md。
+// 潮汐战线：多语言底层（全局 AWI18n）。说明见 tools/I18N.md。
 // 原则：源码里的简体中文原文就是词典的键。t('结束回合') 在 zh-CN 下原样返回，其他语言查 i18n/<lang>.js 里的词典，查不到回退到原文并记进 missing()。
 // 加载顺序：data.js、lore.js 之后，界面脚本之前；i18n/<lang>.js 紧跟在 i18n.js 后面。不依赖 fetch、不用 ES module，file:// 下可用。
 (function (root) {

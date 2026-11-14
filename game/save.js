@@ -1,4 +1,4 @@
-// 钢铁潮汐：存档（localStorage + JSON）。state 是 core.js 的纯数据对局状态，meta 由界面层决定存什么。
+// 潮汐战线：存档（localStorage + JSON）。state 是 core.js 的纯数据对局状态，meta 由界面层决定存什么。
 (function (root) {
   const KEY = 'steel-tide.save.v1';
   const KEEP = 'steel-tide.save.v1.mods-keep';

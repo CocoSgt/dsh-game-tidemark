@@ -1,4 +1,4 @@
-// 《钢铁潮汐》陆军重装单位像素画（棋子尺度版）：tnk med hvy art rkt aa sam
+// 《潮汐战线》陆军重装单位像素画（棋子尺度版）：tnk med hvy art rkt aa sam
 // 规范见 tools/ART-SPEC.md。车辆 26–30 像素宽，炮塔、炮管、履带各是一整块；外轮廓统一 1 像素阵营 o 色。
 // 单位朝右；偶数阵营的镜像由壳层负责。
 (function () {

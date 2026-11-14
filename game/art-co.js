@@ -1,4 +1,4 @@
-/* 《钢铁潮汐》像素美术：8 位指挥官头像
+/* 《潮汐战线》像素美术：8 位指挥官头像
  * 接口：AWArtCO.draw(ctx, id, sizePx, frame, opts) / AWArtCO.icon(id, sizePx, pal) / AWArtCO.ids
  * 每张头像按 48×48 逻辑像素画进一个颜色数组（分层：背景 → 身体 → 头 → 帽子），
  * 每层画完自动描一圈 1 像素的阵营 o 色轮廓，再合成；结果按 id+帧+表情+色阶缓存。

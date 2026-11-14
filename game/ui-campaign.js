@@ -1,4 +1,4 @@
-// 钢铁潮汐：战役《黑潮》的界面（window.AWCampaignUI(G)）。数据在 campaign.js（AWCampaign），格式见 tools/CAMPAIGN.md。
+// 潮汐战线：战役《黑潮》的界面（window.AWCampaignUI(G)）。数据在 campaign.js（AWCampaign），格式见 tools/CAMPAIGN.md。
 // 画面：选关页（按幕分组，每幕一条横向的关卡带）→ 幕前旁白（黑底大字）→ 关前页（目标、失败条件、指挥官 / 席位）→ 对局（开场、关中、结尾对话；
 //       左上一条目标；地图上的目标标记）→ 结算页（用了几天、解锁了什么）→ 尾声 → 回到选关页。
 // 核心的战役接口（C.newCampaignGame、C.objectives、s.events 里的 talk、C.factionOf）接好了就用；没接好的部分这里按 CAMPAIGN.md 的格式自己做一份：

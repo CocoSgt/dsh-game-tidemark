@@ -1,4 +1,4 @@
-// 钢铁潮汐：像素美术壳层（window.AWArt）
+// 潮汐战线：像素美术壳层（window.AWArt）
 // 只负责分发、缓存、缩放和占位；具体怎么画在 art-ground.js / art-water.js / art-buildings.js / art-units-*.js 里。
 // 规范见 tools/ART-SPEC.md。旧的矢量画法备份在 tools/art.vector.bak.js。
 (function (root) {

@@ -1,4 +1,4 @@
-// 钢铁潮汐：战役《黑潮》的过场插画（CG）数据。只放数据，不写逻辑；图片不内嵌，只写相对路径（file:// 下 <img src="cg/xx.webp"> 可直接加载）。
+// 潮汐战线：战役《黑潮》的过场插画（CG）数据。只放数据，不写逻辑；图片不内嵌，只写相对路径（file:// 下 <img src="cg/xx.webp"> 可直接加载）。
 // 全局 AWCG；file:// 下直接 <script src="cg.js"> 加载，node 里 require('./cg.js')。检查：node tools/check-cg.js
 // 每张图的分镜说明和状态见 tools/CG-LIST.md，提示词见 tools/cg-shots.js。
 //

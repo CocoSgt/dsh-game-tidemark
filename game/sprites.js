@@ -1,4 +1,4 @@
-// 钢铁潮汐：单位逐帧素材（window.AWSprites）。由 tools/cut-units.js 从 concepts/frames-t/*.png 生成，不要手改。
+// 潮汐战线：单位逐帧素材（window.AWSprites）。由 tools/cut-units.js 从 concepts/frames-t/*.png 生成，不要手改。
 // 像素画：一格 = 48 逻辑像素，每帧 60×60；每个兵种九帧（待机 2 / 移动 4 / 攻击 3）共用一张调色板，索引色 + 行程编码，同步解码（ready() 一直为真）。
 // 蓝、绿、黄和中立是红方母版按调色板换色；受击、压暗、投影也是运行时生成。
 // 接口：ready() has(type) frames(type, state) frame(type, owner, state, i, {dim, flip, shadow, ghost}) → canvas（60×60，落脚点 anchor，一格 = tile 像素；pixel = true 表示放大要用最近邻）

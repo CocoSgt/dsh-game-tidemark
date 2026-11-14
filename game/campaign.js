@@ -1,4 +1,4 @@
-// 钢铁潮汐：战役《黑潮》的全部数据（关卡、对话、旁白、图鉴条目、世界地图）。只放数据，不写逻辑。
+// 潮汐战线：战役《黑潮》的全部数据（关卡、对话、旁白、图鉴条目、世界地图）。只放数据，不写逻辑。
 // 全局 AWCampaign；file:// 下直接 <script src="campaign.js"> 加载，node 里 require('./campaign.js')。
 // 一句话的故事：四国为抢陨星矿开战，海眼里开出黑色的黑潮，要放大水淹掉所有陆地；赤焰的新人燕烽联合四国，赶在那之前把海眼关上。
 // 字段含义、胜负条件、触发器见 tools/CAMPAIGN.md。阵营编号 5 是黑潮。检查：node tools/check-campaign.js
@@ -1344,7 +1344,7 @@
             { who: 'blitz', mood: 'normal', text: '送到了！' },
             { who: 'wheel', mood: 'lose', text: '输了半个车身。四年了，头一回有人比我先到。' },
             { who: 'blitz', mood: 'normal', text: '你也不赖！筒里是什么？' },
-            { who: 'gold', mood: 'normal', text: '一张水位图。照这个涨法，四十天淹到七城。' },
+            { who: 'gold', mood: 'normal', text: '一张水位图。照这个涨法，四十天淹到七邦。' },
             { who: 'gold', mood: 'normal', text: '我想看看，来求我的人肯不肯为一张纸拼命。你肯。' },
             { who: 'blitz', mood: 'normal', text: '那你出兵！' },
             { who: 'gold', mood: 'normal', text: '别急。这笔账，我们慢慢算。出兵要钱，钱得先挣出来。' },
@@ -1384,7 +1384,7 @@
             { who: 'coin', mood: 'normal', text: '我是玄铢。金沙的兵，我全包了。一口价。' },
             { who: 'gold', mood: 'normal', text: '贵方要这些兵做什么？' },
             { who: 'coin', mood: 'normal', text: '什么都不做。站着别动，等水来。船上的位子，我给你们留。' },
-            { who: 'gold', mood: 'normal', text: '淹了七城，我的账本记给谁看？不卖。军费我自己攒。' },
+            { who: 'gold', mood: 'normal', text: '淹了七邦，我的账本记给谁看？不卖。军费我自己攒。' },
             { who: 'dice', mood: 'normal', text: '佣兵金不换，又是我。这位出的价实在高。押大。' },
           ],
           events: [
@@ -1418,7 +1418,7 @@
             { who: 'gold', mood: 'normal', text: '我认。所以我算过：世界淹了，钱一文不值。这仗划算。' },
             { who: 'coin', mood: 'normal', text: '等矿分完，你们四家还会为钱打起来。那时候更亏。' },
             { who: 'gold', mood: 'normal', text: '那是下一笔账。这一笔，先跟你算。' },
-            { who: 'narrator', mood: 'normal', text: '玄铢走了。她留下一句话：七城里有一座，她已经付过定金。' },
+            { who: 'narrator', mood: 'normal', text: '玄铢走了。她留下一句话：七邦里有一座，她已经付过定金。' },
           ],
           fail: [
             { who: 'gold', mood: 'lose', text: '账没平。这是我头一回交不出月结。' },
@@ -1568,7 +1568,7 @@
         unlock: { cos: ['pyro', 'wall'], maps: ['孤城'], codex: ['coin'] },
         dialog: {
           intro: [
-            { who: 'narrator', mood: 'normal', text: '孤城，金沙七城之一。玄铢和玄砧把它围住了。' },
+            { who: 'narrator', mood: 'normal', text: '孤城，金沙七邦之一。玄铢和玄砧把它围住了。' },
             { who: 'narrator', mood: 'normal', text: '城里守着石敢当。城外，祝炎带着赤焰的残部赶来接应。' },
             { who: 'coin', mood: 'normal', text: '石匠头，这座城我付过定金了。开个价，余款现在结。' },
             { who: 'wall', mood: 'normal', text: '墙不卖。墙在，人在。' },
@@ -2162,7 +2162,7 @@
         { id: 'jinghu', name: '镜湖', at: [392, 196], region: 'haichuang', note: '海床北坡的残湖，北岸有一座科研所。' },
         { id: 'zoulang', name: '同盟走廊', at: [620, 560], region: 'jinsha', note: '金沙运货的大路。' },
         { id: 'biwan', name: '碧湾海峡', at: [884, 452], region: 'jinsha', note: '金沙出海的口子。' },
-        { id: 'gucheng', name: '孤城', at: [503, 612], region: 'jinsha', note: '金沙七城之一。守城的是全金沙最犟的人。' },
+        { id: 'gucheng', name: '孤城', at: [503, 612], region: 'jinsha', note: '金沙七邦之一。守城的是全金沙最犟的人。' },
         {
           id: 'suixing',
           name: '碎星群岛',

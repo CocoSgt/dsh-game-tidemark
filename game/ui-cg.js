@@ -1,4 +1,4 @@
-// 钢铁潮汐：过场动画播放器（window.AWCGPlayer）。插画在 cg/ 目录（webp，按相对路径加载），编排在 cg.js（全局 AWCG）：
+// 潮汐战线：过场动画播放器（window.AWCGPlayer）。插画在 cg/ 目录（webp，按相对路径加载），编排在 cg.js（全局 AWCG）：
 //   { opening: [镜], acts: { 幕 id: [镜] }, scenes: { 关卡 id: { before: [镜], after: [镜], at: { 对话段: { 行号: 图 } } } }, ending: [镜] }
 //   镜 = { img, lines: [一句话 | { who: 指挥官 id, text }] }
 // 全屏插画慢慢推拉摇移（每张 6 秒上下），底部字幕一句一句出：旁白居中，人物台词带名字牌。图与图之间交叉淡入；图没到位的镜头只播文字（黑底）。
