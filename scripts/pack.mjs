@@ -94,7 +94,8 @@ if (flag('--no-manual')) {
   console.log('manual/  skipped (--no-manual)')
 } else {
   const dir = join(source, 'handbook')
-  const pages = existsSync(dir) ? readdirSync(dir).filter(f => /\.html$/i.test(f)) : []
+  // The full handbook only: the no-spoiler copy (…-无剧透版.html) is for the article, not the package.
+  const pages = existsSync(dir) ? readdirSync(dir).filter(f => /\.html$/i.test(f) && !/无剧透|lite/i.test(f)) : []
   // The handbook has been renamed more than once: take the page changed most recently.
   const page = pages.map(f => ({ f, t: statSync(join(dir, f)).mtimeMs })).sort((a, b) => b.t - a.t)[0]?.f
   if (!page) { console.error(`No handbook HTML in ${dir}. Use --no-manual to build without it.`); process.exit(1) }
