@@ -24,22 +24,43 @@
     {
       "src": "store/shot-1.jpg",
       "caption": {
-        "en": "Blue squares show where the tank can go; the arrow is its path",
-        "zh": "蓝色格子是坦克能到的地方，箭头是它要走的路线"
+        "en": "Every attack shows its odds first",
+        "zh": "每次进攻先看预判：伤害多少、会不会被反击、谁克谁"
       }
     },
     {
       "src": "store/shot-2.jpg",
       "caption": {
-        "en": "After the move: choose what the unit does",
-        "zh": "走到位置后，选这支部队做什么"
+        "en": "33 units: infantry, vehicles, air and sea",
+        "zh": "33 个兵种，步兵、车辆、航空、舰船，各有擅长和克星"
       }
     },
     {
       "src": "store/shot-3.jpg",
       "caption": {
-        "en": "The turn menu",
-        "zh": "回合菜单"
+        "en": "A commander power can turn a battle",
+        "zh": "每位指挥官都有一招能扭转战局的技能"
+      }
+    },
+    {
+      "src": "store/shot-4.jpg",
+      "caption": {
+        "en": "Tech trees for every faction and commander",
+        "zh": "每个阵营、每位指挥官都有自己的科技树"
+      }
+    },
+    {
+      "src": "store/shot-5.jpg",
+      "caption": {
+        "en": "A campaign across the world map",
+        "zh": "在世界地图上一幕一幕打下去的战役"
+      }
+    },
+    {
+      "src": "store/shot-6.jpg",
+      "caption": {
+        "en": "Four factions, 29 commanders",
+        "zh": "四个阵营、29 位指挥官，各有来历"
       }
     }
   ],
@@ -103,14 +124,6 @@
       "caption": {
         "en": "Trailer",
         "zh": "宣传片"
-      }
-    },
-    {
-      "src": "store/play.mp4",
-      "poster": "store/play-poster.jpg",
-      "caption": {
-        "en": "One move: pick a unit, see its range, draw the path",
-        "zh": "走一步：选中部队，看移动范围，画出路线"
       }
     }
   ]
