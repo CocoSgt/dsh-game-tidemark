@@ -523,11 +523,11 @@
     ], 'tech');
     if (d.RES && c.oreOf) { const R = d.RES; add(R.name, [
       R.mineText ? T('{name}：{text}。', { name: R.mine, text: R.mineText }) : '',
-      T('陆上单位结束移动停留在{shard}上就能拾取，获得 {n} 份，这一格变为{pit}。航空单位不拾取。', { shard: R.shard, n: R.shardGain, pit: R.pit || '' }),
+      T('陆上单位结束移动停留在{shard}上就能拾取，获得 {min}–{max} 份（每个碎片堆在开局时随机决定），这一格变为{pit}。航空单位不拾取。', { shard: R.shard, min: R.shardMin, max: R.shardMax, pit: R.pit || '' }),
+      T('击毁敌方的强化单位时，获得它强化价的一半（向上取整）。运输单位搭载的强化单位各自计算。'),
       T('生产时每个兵种都有两种方式：常规生产只需支付资金；强化生产另需支付{res}，单位更强。', { res: R.name }),
       T('强化的效果和所需份数按兵种不同，见“兵种”页。生产列表中按左右键切换。'),
       T('两个单位合并时，双方都是强化单位才保留强化。'),
-      T('在科技面板可投入{res}加速研究：1 份换 {pts} 研究点（按地图规模调整），每回合最多 {max} 份。', { res: R.name, pts: R.boostPts, max: R.boostMax }),
       T('可以在开局规则里关闭{res}。', { res: R.name }),
     ], 'ore'); }
     add(T('撤回', null, 'tab'), [T('刚生产的单位，在做下一个动作之前可以按取消键撤回，资金和{res}全额返还。', { res: (d.RES && d.RES.name) || '' }), T('单位移动后如果没有遇伏，也没有发现新的敌方单位，可以按取消键撤回这一步。'), T('做了下一个动作之后不能撤回。')], 'wait');

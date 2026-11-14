@@ -537,7 +537,7 @@
     const RDESC = {
       fog: '仅可看见己方单位和建筑周围的格子。森林、礁石、废墟中的敌方单位仅在相邻时可被发现，视野范围再大也看不到。', startFunds: '开局时各阵营持有的资金。', income: '每座收入建筑每回合提供的资金，陨星矿为 2 倍。',
       dayLimit: '到达天数上限时，按建筑数和单位总造价判定胜负。选择“无”则不设上限。', powers: '攻击和受到攻击均可积累技能槽，积满后可发动指挥官技能。', coPassives: '指挥官的特长与阵营特性。关闭后各阵营的数值相同。',
-      get ore() { const R = D.RES || {}; return (R.mineText ? T('{text}。', { text: R.mineText }) : '') + T('陆上单位停留在{shard}上可拾取 {b} 份。可用于强化生产（效果按兵种不同）和加速研究。', { shard: R.shard, b: R.shardGain }); },
+      get ore() { const R = D.RES || {}; return (R.mineText ? T('{name}：{text}。', { name: R.mine, text: R.mineText }) : '') + T('陆上单位停留在{shard}上可拾取 {min}–{max} 份（每个碎片堆在开局时随机决定）。击毁敌方的强化单位，获得它强化价的一半。只用于强化生产，效果按兵种不同。', { shard: R.shard, min: R.shardMin, max: R.shardMax }); },
       tech: '支付研究经费获得研究点，解锁通用、阵营、指挥官三类科技。', handicap: '阵营数较少的队伍开局资金增加，每回合收入也略有增加。', loot: '三支及以上队伍对战时，击毁敌方单位可获得其造价的一部分资金。',
     };
     function stepRules(back) {

@@ -1315,10 +1315,13 @@
   // 左上角的阵营牌：当前行动方的指挥官头像、阵营名、第几天、资金、技能槽
   // 第二种资源（D.RES）开没开：对局选项 rules.ore，核心没有这种资源时也算没开
   const oreOn = () => !!(S && D.RES && S.ore && !(S.rules && S.rules.ore === false));
-  // 回合开始和行动带来的资源事件（s.events）：拾取碎片堆在那一格飘“+N”（闪光 + 拾取音），回合开始的产出在阵营牌上飘“+N”
+  // 回合开始和行动带来的资源事件（s.events）：拾取碎片堆在那一格飘“+N”（闪光 + 拾取音），回合开始的产出在阵营牌上飘“+N”；
+  // 击毁敌方的强化单位（bounty）：击毁方分到的在那一格飘“+N 碎片”；陨星矿采完变成山地（mineGone）：重画这一格，飘一句提示
   function oreEvents() {
     if (!S || !Array.isArray(S.events)) return;
-    for (const e of S.events) { if (!e || e._ore) continue; if (e.type !== 'pickup' && e.type !== 'ore') continue; e._ore = true; lastOre = { type: e.type, amount: e.amount, x: e.x, y: e.y };
+    for (const e of S.events) { if (!e || e._ore) continue; if (e.type !== 'pickup' && e.type !== 'ore' && e.type !== 'bounty' && e.type !== 'mineGone') continue; e._ore = true; lastOre = { type: e.type, amount: e.amount, x: e.x, y: e.y };
+      if (e.type === 'bounty') { if (tf() <= 0 || (visMask && !seen(e.x, e.y))) continue; fx.push({ type: 'ambush', big: true, rise: true, tone: 'gold', text: '+' + e.amount + ' ' + D.RES.short, x: e.x, y: e.y, dur: 1500 * Math.max(0.3, tf()), t0: performance.now() }); continue; }
+      if (e.type === 'mineGone') { checkMap(); if (tf() <= 0 || (visMask && !seen(e.x, e.y))) continue; fx.push({ type: 'ambush', tone: 'warn', text: tt('{name}已采完，变为山地', { name: D.RES.mine }), x: e.x, y: e.y, dur: 1800 * Math.max(0.3, tf()), t0: performance.now() }); continue; }
       if (e.type === 'pickup') { checkMap(); if (tf() <= 0 || (visMask && !seen(e.x, e.y))) continue; sfx.captured(); addFx('levelup', e.x, e.y, 900); addFx('hit', e.x, e.y, 260); fx.push({ type: 'ambush', big: true, rise: true, tone: 'gold', text: '+' + e.amount + ' ' + D.RES.short, x: e.x, y: e.y, dur: 1500 * Math.max(0.3, tf()), t0: performance.now() }); }
       else if (e.player === S.turn && e.amount > 0 && tf() > 0 && (human[S.turn] || !visMask)) HUD.float('+' + e.amount, 'ore'); }
   }
@@ -1351,10 +1354,10 @@
       unit.aura = auraText(q); unit.ore = !!q.ore; unit.auraNames = auraNames(q); unit.veil = veilOf(q) === 'dive' ? tt('下潜') : veilOf(q) ? tt('隐蔽') : '';
     }
     // capBy：占着这一格的单位下次占领会扣多少占领值（C.capPower，指挥官可能有倍数）
-    // 陨星矿：还剩几份（C.mineLeft；每座矿的储量有限，产完只给资金）
+    // 陨星矿：还剩几份（C.mineLeft；每座矿的储量有限，自由对局里采完就变成山地，“已采完”只会出现在战役里）
     let mineTip = '';
     if (t === 'mine' && D.RES && C.mineLeft && !(S.rules && S.rules.ore === false)) { const left = C.mineLeft(S, cur.x, cur.y); if (left != null && left !== Infinity) mineTip = left > 0 ? tt('剩余 {n} 份{name}', { n: left, name: D.RES.name }) : tt('已采完'); }
-    return { t, name: T.name, def: T.def, tip: t === 'shard' && D.RES ? T.note || '' : mineTip, tipShort: t === 'shard' && D.RES ? tt('可拾取 {n} 份{name}', { n: D.RES.shardGain, name: D.RES.name }) : mineTip, prop: !!T.prop, owner: m.owner[cur.y][cur.x], cap: cap < 20 && q ? cap : null, capBy, unit };
+    return { t, name: T.name, def: T.def, tip: t === 'shard' && D.RES ? T.note || '' : mineTip, tipShort: t === 'shard' && D.RES ? tt('可拾取 {n} 份{name}', { n: C.shardLeft ? C.shardLeft(S, cur.x, cur.y) : D.RES.shardMax, name: D.RES.name }) : mineTip, prop: !!T.prop, owner: m.owner[cur.y][cur.x], cap: cap < 20 && q ? cap : null, capBy, unit };
   }
   // ── 小地图：默认收成右下角一个图标；按 N、点图标展开。地图明显比一屏大时默认展开 ──
   let miniK = 3, miniBase = null, miniDirty = true, miniPref = lsGet('steel-tide.mini'), miniKey = '', miniCv = null, miniDown = false;

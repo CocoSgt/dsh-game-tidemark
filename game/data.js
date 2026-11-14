@@ -17,11 +17,15 @@
   ];
 
   // 第二种资源。玩家看得到的名字都集中在这里，别处的说明文字引用它，改名只改这一处。
-  // mine_：矿的产出 { every: 每几回合, amount: 产出几份, cap: 每个阵营最多算几座, total: 每座矿一共能产出几份（产完只给资金；剩余量见 C.mineLeft） }，现成的说明文字在 mineText；shardGain：拾取一处碎片堆得到多少；boostPts：投入一份换多少研究点（乘地图系数）；boostMax：每回合最多投入几份
-  D.RES = { name: '陨星碎片', short: '碎片', mine: '陨星矿', shard: '碎片堆', pit: '碎片坑', mine_: { every: 3, amount: 1, cap: 2, total: 3 }, shardGain: 5, boostPts: 30, boostMax: 2, atk: 0.2, def: 0.2, heal: 10, repair: 10, move: 1 };
+  // 来源三种：陨星矿产出、拾取碎片堆、击毁敌方的强化单位（击毁方得它强化价的一半，向上取整；core.js 的 oreBounty）。用途只有一种：强化建造。
+  // mine_：矿的产出 { every: 每几回合, amount: 产出几份, min / max: 每座矿一共能产出几份的范围 }。每座矿的储量、每个碎片堆的拾取量（shardMin–shardMax）
+  //   都在开局时用 C.rand 各掷一次，存进 s.mineLeft / s.shardAmt（镜像位置取同一个值，见 core.js 的 oreRoll）；查询用 C.mineLeft / C.shardLeft。
+  //   占几座算几座，不设上限；自由对局里采完的矿变成普通山地（战役里留着、只给资金）。现成的说明文字在 mineText、shardText
+  D.RES = { name: '陨星碎片', short: '碎片', mine: '陨星矿', shard: '碎片堆', pit: '碎片坑', mine_: { every: 1, amount: 1, min: 5, max: 10 }, shardMin: 1, shardMax: 3, atk: 0.2, def: 0.2, heal: 10, repair: 10, move: 1 };
   // 强化价写在每个兵种的 ore 上（1–5，按造价和战场价值分档），也是强化的“档”：攻防加成只对强化价不高于自己的敌方单位生效（core.js 的 oreVs）。
   // 强化建造的效果：有武器的单位攻击 +atk、防御 +def；没有武器的单位防御 +def，另按用途加——医护兵每回合治疗量 +heal（内部 HP，10 = 1 点），维修车每回合修理量 +repair，运输单位移动力 +move
-  D.RES.mineText = '每 ' + D.RES.mine_.every + ' 回合产出 ' + D.RES.mine_.amount + ' 份' + D.RES.name + '（每个阵营最多计 ' + D.RES.mine_.cap + ' 座），每座一共可产出 ' + D.RES.mine_.total + ' 份'; // 界面、图鉴直接用这一句，别自己拿数字拼
+  D.RES.mineText = (D.RES.mine_.every === 1 ? '每回合' : '每 ' + D.RES.mine_.every + ' 回合') + '产出 ' + D.RES.mine_.amount + ' 份' + D.RES.name + '，一共可产出 ' + D.RES.mine_.min + '–' + D.RES.mine_.max + ' 份（每座矿在开局时随机决定），自由对局中采完后变为山地';
+  D.RES.shardText = '获得 ' + D.RES.shardMin + '–' + D.RES.shardMax + ' 份' + D.RES.name + '（每个碎片堆在开局时随机决定）'; // 碎片堆的拾取量，界面、图鉴直接用 // 界面、图鉴直接用这一句，别自己拿数字拼
   D.TERRAIN = {
     plain: { name: '平原', def: 1 },
     forest: { name: '森林', def: 2, note: '迷雾开启时，森林中的单位只有相邻时才会被发现。' },
@@ -46,7 +50,7 @@
     tower: { name: '雷达塔', def: 3, prop: true, aura: { r: 5, atk: 0.1 }, note: '停留的己方步兵类单位每回合恢复 2 HP（需支付资金）。己方雷达塔 5 格范围内的己方单位攻击 +10%。多座雷达塔的效果不叠加。' },
     mine: { name: D.RES.mine, def: 3, prop: true, income: 200, note: '每回合提供 200 资金；' + D.RES.mineText + '。停留的己方步兵类单位每回合恢复 2 HP（需支付资金）。' },
     // 可拾取的地面物件：陆上单位结束移动停在上面即拾取，这一格变成荒地。移动消耗和荒地一样，没有地形防御
-    shard: { name: D.RES.shard, def: 0, note: '陆上单位结束移动停在这一格时拾取，获得 ' + D.RES.shardGain + ' 份' + D.RES.name + '，这一格变为' + D.RES.pit + '（与荒地相同）。轮式车辆的移动消耗为 3。' },
+    shard: { name: D.RES.shard, def: 0, note: '陆上单位结束移动停在这一格时拾取，' + D.RES.shardText + '，这一格变为' + D.RES.pit + '（与荒地相同）。轮式车辆的移动消耗为 3。' },
     // 拾取以后留下的空坑：和荒地一样（1 星防御、同样的移动消耗），不能再拾取
     shard_used: { name: D.RES.pit, def: 1, note: '已被拾取的' + D.RES.shard + '，与荒地相同。轮式车辆的移动消耗为 3。' },
     hospital: { name: '医院', def: 3, prop: true, note: '停留的己方步兵类单位每回合恢复 4 HP，相邻四格内的己方步兵类单位每回合恢复 2 HP（需支付资金）。' },

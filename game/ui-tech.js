@@ -4,8 +4,8 @@
 //   左：竖排的科技线页签（通用 / 阵营 / 指挥官三组），每个页签 = 图标 + 线名 + 三个进度点；在研的那条有脉冲光
 //   中：当前这条线的三张大卡片（一、二、三级），粗箭头相连；卡片上只有图标、名称、研究点、状态角标
 //   卡片下：所选卡片的效果（大字）、风味句、一个跟着状态变的按钮
-//   底：一行状态栏——研究中的项目 | 研究经费分段选择 | 陨星碎片投入
-// 操作：上下 = 切线，左右 = 切卡片，确定 = 研究 / 加入队列 / 取消研究，LB RB = 调经费，X = 说明浮层（研究点来源、阵营研究方式），Y = 投入碎片，B 关闭。
+//   底：一行状态栏——研究中的项目 | 研究经费分段选择
+// 操作：上下 = 切线，左右 = 切卡片，确定 = 研究 / 加入队列 / 取消研究，LB RB = 调经费，X = 说明浮层（研究点来源、阵营研究方式），B 关闭。
 (function (root) {
   'use strict';
   const Kit = root.AWKit, esc = Kit.esc, Nav = Kit.Nav, $ = id => document.getElementById(id);
@@ -76,9 +76,7 @@
   .tbar .seg { display:flex; border-radius:14r; overflow:hidden; box-shadow:0 0 0 4r var(--line); } .tbar .seg span { display:flex; align-items:baseline; gap:8r; height:max(34px,64r); line-height:max(34px,64r); padding:0 20r; background:var(--bg2); color:var(--mut); cursor:pointer; border-left:3r solid var(--line); } .tbar .seg span:first-child { border-left:0; } .tbar .seg span b { color:var(--gold); font-size:max(20px,24r); }
   .tbar .seg span.on { background:linear-gradient(var(--gold2), var(--gold)); color:var(--ink); font-weight:900; } .tbar .seg span.on b { color:var(--ink); } .tbar .seg span.no:not(.on) { opacity:.45; }
   .tbar .fd small { font-size:max(20px,22r); color:var(--txt); cursor:pointer; display:flex; align-items:center; gap:8r; } .tbar .fd small b { color:var(--gold); }
-  .tbar .ore { flex:none; display:flex; align-items:center; gap:10r; min-height:max(34px,64r); padding:0 18r; border-radius:14r; background:linear-gradient(#bff2ff, #5cc4e6); color:var(--ink); font-weight:900; box-shadow:inset 0 0 0 3r var(--line); cursor:pointer; } .tbar .ore .ic { width:44r; height:44r; } .tbar .ore b { font-size:max(20px,34r); } .tbar .ore.no { background:#2a3248; color:#8f99b5; } .tbar .ore.no .ic { filter:grayscale(1); opacity:.6; }
-  .tbar .ore small { font-size:max(20px,24r); font-weight:800; } .tdesc .go.shake { animation:tShake .32s; } @keyframes tShake { 20% { transform:translateX(-10r); } 50% { transform:translateX(9r); } 80% { transform:translateX(-5r); } }
-  #ttip { position:fixed; z-index:8; max-width:60vw; padding:10r 22r; font-size:max(20px,26r); font-weight:800; color:var(--gold2); background:#141a2c; box-shadow:0 0 0 4r var(--line), 0 0 0 7r var(--gold); pointer-events:none; }
+  .tdesc .go.shake { animation:tShake .32s; } @keyframes tShake { 20% { transform:translateX(-10r); } 50% { transform:translateX(9r); } 80% { transform:translateX(-5r); } }
   .tp .th { overflow:hidden; } .tp .th .res { min-width:0; flex-shrink:1; overflow:hidden; white-space:nowrap; } .tp .th .hb { flex:none; }
   html[data-lang]:not([data-lang="zh-CN"]):not([data-lang="zh-TW"]):not([data-lang="ja"]):not([data-lang="ko"]) .ttabs { width:470r; } html[data-lang]:not([data-lang="zh-CN"]):not([data-lang="zh-TW"]):not([data-lang="ja"]):not([data-lang="ko"]) .ttab b { white-space:normal; overflow:visible; hyphens:none; -webkit-hyphens:none; overflow-wrap:normal; line-height:1.05; font-size:max(20px,26r); } html[data-lang]:not([data-lang="zh-CN"]):not([data-lang="zh-TW"]):not([data-lang="ja"]):not([data-lang="ko"]) .ttab .dots i { width:max(10px,20r); } html[data-lang]:not([data-lang="zh-CN"]):not([data-lang="zh-TW"]):not([data-lang="ja"]):not([data-lang="ko"]) .ttabs .tg { white-space:normal; }
   /* X：说明浮层 */
@@ -99,7 +97,7 @@
   body.narrow .ttabs .tg { margin:0 0 0 14r; flex:none; } body.narrow .ttabs .tg:first-child { margin-left:0; } body.narrow .ttabs .tg span { display:none; } body.narrow .ttab { min-height:92r; padding:0 16r; border-left-width:8r; } body.narrow .ttab b { flex:none; }
   body.narrow .tmain { padding:16r 16r 10r; overflow-y:auto; } body.narrow .tcards { flex:1 1 330r; min-height:330r; max-height:560r; } body.narrow .tp .th { gap:10r; padding-left:16r; } body.narrow .tp .th > span { display:none; } body.narrow .tarw { width:20r; height:14r; margin-right:20r; } body.narrow .tarw::after { right:-20r; top:-13r; border-width:20r; border-left-width:20r; } body.narrow .tcd { padding:26r 6r 14r; border-width:4r; } body.narrow .tcd .ic { width:54%; } body.narrow .tcd .bdg { right:-8r; top:-12r; } body.narrow .tcd .tier { display:none; }
   body.narrow .tdesc { flex-direction:column; align-items:stretch; gap:14r; padding:16r 18r; } body.narrow .tdesc .go { min-width:0; }
-  body.narrow .tbar { flex-wrap:wrap; gap:10r 14r; padding:10r 16r; white-space:normal; } body.narrow .tbar .now { flex:1 1 100%; } body.narrow .tbar .fd { flex:1 1 100%; flex-wrap:wrap; border:0; padding:0; } body.narrow .tbar .fd > .lbl { display:none; } body.narrow .tbar .fd small { flex:1 1 100%; justify-content:center; } body.narrow .tbar .seg { flex:1; } body.narrow .tbar .seg span { flex:1; justify-content:center; padding:0 6r; } body.narrow .tbar .ore { flex:1 1 100%; justify-content:center; } body.narrow .tpop { bottom:20r; }
+  body.narrow .tbar { flex-wrap:wrap; gap:10r 14r; padding:10r 16r; white-space:normal; } body.narrow .tbar .now { flex:1 1 100%; } body.narrow .tbar .fd { flex:1 1 100%; flex-wrap:wrap; border:0; padding:0; } body.narrow .tbar .fd > .lbl { display:none; } body.narrow .tbar .fd small { flex:1 1 100%; justify-content:center; } body.narrow .tbar .seg { flex:1; } body.narrow .tbar .seg span { flex:1; justify-content:center; padding:0 6r; } body.narrow .tpop { bottom:20r; }
   `);
   const T = {};
   T.open = (G, onClose) => {
@@ -114,7 +112,7 @@
       id: 'tech', html: `<div class="tp pn"><div class="th" style="${Kit.pcs(p)}">${Kit.ic('tech')}${esc(tt('科技研究'))}<span>${esc(G.pname(p))}</span><div class="res" id="tres"></div><i class="hb" id="thpop">${esc(tt('研究点来源'))}</i><i class="hb" id="thx">${esc(tt('关闭'))}</i></div><div class="tnow" id="tnow"></div><div class="tb"><div class="ttabs" id="ttabs"></div><div class="tmain" id="tmain"></div></div><div class="tbar" id="tbar"></div><div class="tpop" id="tpop" hidden></div></div>`, onClose,
       onCancel: () => { if (pop) { sfx.back(); setPop(''); } else close(); },
       onFocus: b => { if (!b.dataset.id) return; Kit.note(''); const ln = lines[li]; if (ln) sel[ln.line] = Math.max(0, (ln.items || []).findIndex(x => x.id === b.dataset.id)); desc(); Kit.paintHints(true); },
-      keys: { up: () => line(-1), down: () => line(1), left: () => { setPop(''); Nav.move('left'); }, right: () => { setPop(''); Nav.move('right'); }, lb: () => fund(-1), rb: () => fund(1), x: () => { sfx.tick(); setPop(pop ? '' : 'all'); }, y: () => { if (C.boostInfo && D.RES) boost(); else return false; } },
+      keys: { up: () => line(-1), down: () => line(1), left: () => { setPop(''); Nav.move('left'); }, right: () => { setPop(''); Nav.move('right'); }, lb: () => fund(-1), rb: () => fund(1), x: () => { sfx.tick(); setPop(pop ? '' : 'all'); } },
       // 上下（键盘另有 Tab / Shift+Tab）在左边的科技线之间移动；Q / E（手柄 LB / RB）调研究经费的档位；左右在这一条线的各级之间移动
       hints: () => Kit.ptr() ? [] : [['a', actOf(curIt())[1], false, true], ['b', '关闭'], ['x', '研究点来源'], ['ud', Kit.dev === 'key' ? '切换科技线（或 Tab）' : '切换科技线'], ['lbrb', '研究经费']],   // 鼠标、触屏：按钮都在面板上（右上角“研究点来源”“关闭”）
     });
@@ -194,30 +192,18 @@
       el.innerHTML = `<div class="tx"><p class="ef${it.id === justId ? ' pop' : ''}">${esc(it.desc || '')}</p>${why ? `<p class="wy${it.state === 'barred' ? ' bad' : ''}">${esc(why)}</p>` : ''}${it.moot && it.mootWhy ? `<p class="wy">${esc(it.mootWhy)}</p>` : ''}${it.flavor ? `<p class="fl">${esc(it.flavor)}</p>` : ''}</div><div class="go ${a[0]}" id="tgo">${a[0] === 'no' ? '' : Kit.cap('a')}${esc(a[1])}</div>`;
       $('tgo').onclick = () => pick(it);
     }
-    // 投入第二种资源换研究点（C.boostInfo / C.boostResearch；名字读 D.RES），当场进池子
-    function boostHtml() {
-      const R = D.RES, bi = R && C.boostInfo ? safe(() => C.boostInfo(G.S, p), null) : null; if (!bi) return '';
-      // 不能投时只留图标和数字，原因在鼠标停上去、点它或按 Y 时用提示条说
-      return `<span class="ore${bi.ok ? '' : ' no'}" id="tboost">${Kit.ic('ore')}<b>${bi.have}</b>${bi.ok ? `<span>${Kit.cap('y')}${esc(tt('投入 1 份（+{n} 点）', { n: bi.pts }))}</span>` : `<small>${esc(tt('投入'))}</small>`}</span>`;
-    }
-    function boost() { const bi = safe(() => C.boostInfo(G.S, p), null); if (!bi) return; if (bi.ok && safe(() => C.boostResearch(G.S, p, 1), 0) > 0) { sfx.captured(); paint(); } else { sfx.no(); Kit.note((bi && bi.why) || tt('现在不能投入')); } }
     function bar() {
-      { const t = $('ttip'); if (t) t.remove(); }
-      const cf = funds.find(f => f.current) || {}, fundsNow = safe(() => G.S.funds[p], 0), bi0 = D.RES && C.boostInfo ? safe(() => C.boostInfo(G.S, p), null) : null;
+      const cf = funds.find(f => f.current) || {}, fundsNow = safe(() => G.S.funds[p], 0);
       const its = Object.values(all), can = its.filter(it => it.state === 'open'), near = its.filter(it => it.state === 'short').sort((a, b) => a.lack - b.lack)[0];
-      // 顶部右侧：金币、碎片、这一档每回合花多少
-      $('tres').innerHTML = `<span>${Kit.ic('coin', 's')}<b>${fundsNow}</b></span>${bi0 ? `<span>${Kit.ic('ore', 's')}<b>${bi0.have}</b></span>` : ''}<span class="cost" title="${esc(tt('每回合研究经费'))}">${Kit.ic('tech', 's')}<b>${esc(tt('−{n}/回合', { n: (rate && rate.fund ? rate.fund.cost : cf.cost) || 0 }))}</b></span>`;
+      // 顶部右侧：金币、这一档每回合花多少
+      $('tres').innerHTML = `<span>${Kit.ic('coin', 's')}<b>${fundsNow}</b></span><span class="cost" title="${esc(tt('每回合研究经费'))}">${Kit.ic('tech', 's')}<b>${esc(tt('−{n}/回合', { n: (rate && rate.fund ? rate.fund.cost : cf.cost) || 0 }))}</b></span>`;
       // 标题栏下面：现有研究点（大数字）、每回合进账（X 看来源）、现在买得起几项 / 离最近的一项还差多少
       $('tnow').className = 'tnow';
       $('tnow').innerHTML = `${Kit.ic('tech')}<span class="lb">${esc(tt('研究点'))}</span><b class="rp" id="trp">${rpNow()}</b><span class="rt" id="trate">${esc(tt('每回合 +{n}', { n: rate ? rate.total : (cf.pts || 0) }))}${Kit.cap('x')}</span>` +
         `<span class="tip${can.length ? ' can' : ''}">${esc(can.length ? tt('可解锁 {n} 项科技', { n: can.length }) : near ? tt('再积累 {n} 研究点可解锁「{name}」', { n: near.lack, name: near.name }) : '')}</span>`;
       $('tnow').onclick = e => { if (e.target.closest('#trate')) { sfx.tick(); setPop(pop ? '' : 'all'); } };
-      // 底栏：经费档位（每回合花多少资金、换多少研究点）、投入碎片
-      $('tbar').innerHTML = `<div class="fd"><span class="lbl">${esc(tt('研究经费'))}</span>${Kit.cap('lb')}<div class="seg">${funds.map(f => `<span class="${f.current ? 'on' : ''}${f.ok === false ? ' no' : ''}" data-f="${esc(f.id)}">${esc(f.name)}<b>${f.cost}</b><em>+${f.pts}</em></span>`).join('')}</div>${Kit.cap('rb')}</div>` + boostHtml();
-      if ($('tboost')) { $('tboost').onclick = boost; const tb = $('tboost'), tipOff = () => { const t = $('ttip'); if (t) t.remove(); };
-        // 不能投入的原因：贴着这个按钮上方的小提示，鼠标移开就消失
-        tb.onmouseenter = () => { const bi = safe(() => C.boostInfo(G.S, p), null); tipOff(); if (!bi || bi.ok || !bi.why) return; const t = document.createElement('div'); t.id = 'ttip'; t.textContent = bi.why; scr.el.appendChild(t); const r = tb.getBoundingClientRect(); t.style.left = Math.max(8, Math.min(innerWidth - t.offsetWidth - 8, r.left + r.width / 2 - t.offsetWidth / 2)) + 'px'; t.style.top = (r.top - t.offsetHeight - 10 * Kit.s) + 'px'; };
-        tb.onmouseleave = tipOff; }
+      // 底栏：经费档位（每回合花多少资金、换多少研究点）
+      $('tbar').innerHTML = `<div class="fd"><span class="lbl">${esc(tt('研究经费'))}</span>${Kit.cap('lb')}<div class="seg">${funds.map(f => `<span class="${f.current ? 'on' : ''}${f.ok === false ? ' no' : ''}" data-f="${esc(f.id)}">${esc(f.name)}<b>${f.cost}</b><em>+${f.pts}</em></span>`).join('')}</div>${Kit.cap('rb')}</div>`;
       $('tbar').querySelectorAll('.seg span').forEach(b => { b.onclick = () => { if (safe(() => C.setFund(G.S, p, b.dataset.f), false)) { sfx.tick(); paint(); } else sfx.no(); }; });
     }
     // 说明浮层：研究点每回合从哪里来 + 这条线所在组的说明

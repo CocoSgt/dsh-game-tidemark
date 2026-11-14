@@ -379,7 +379,8 @@
   function rpIncome(s, p) {
     if (!techOn(s) || !s.tech) return;
     const t = techMut(s, p);
-    if (t.cmTurn) t.cmTurn = 0; if (t.boost) t.boost = 0;
+    if (t.cmTurn) t.cmTurn = 0;
+    if (t.boost != null) delete t.boost; // 旧存档：以前投碎片加速研究时的记账
     const { lv, down } = fundPick(s, p, t, s.funds[p]), r = researchOf(s, p);
     const parts = [{ label: tr('研究经费（{lv}）', { lv: lv.name }), pts: lv.pts }];
     if (r.sub && lv.id !== 'stop') parts.push({ label: tr('{name}：议会拨款', { name: r.name }), pts: r.sub });
@@ -877,66 +878,105 @@
     }
     return '';
   };
-  // 一座陨星矿还能产出几份（不是矿 = null）。每座矿一共只能产出 D.RES.mine_.total 份，产完后只提供资金。
-  // 剩余量记在 s.mineLeft[格子编号]，没记过的按满额算
+  // 储量和拾取量：每座矿一共能产出几份（D.RES.mine_.min–max）、每个碎片堆能拾取几份（D.RES.shardMin–shardMax），开局时各掷一次（oreRoll），
+  // 存在 s.mineLeft[格子编号]（剩余量，产一份减一）、s.shardAmt[格子编号]。没有记录的格子（旧存档、手搭的局面）按格子坐标取一个固定值，不动随机数
+  const oreFixed = (lo, hi, x, y) => lo + (((x * 7 + y * 13 + (x ^ y) * 5) % (hi - lo + 1)) + (hi - lo + 1)) % (hi - lo + 1);
+  // 一座陨星矿还能产出几份（不是矿 = null）。自由对局里采完的矿变成山地（mineGone），这里就返回 null；
+  // 战役里采完的矿留着（关卡目标要占它），返回 0，只提供资金
   C.mineLeft = function (s, x, y) {
     if (!s.map.t[y] || s.map.t[y][x] !== 'mine') return null;
-    const T = D.RES.mine_.total, k = y * s.map.w + x;
-    if (!T) return Infinity;
-    return s.mineLeft && s.mineLeft[k] != null ? s.mineLeft[k] : T;
+    const k = y * s.map.w + x, R = D.RES.mine_;
+    return s.mineLeft && s.mineLeft[k] != null ? s.mineLeft[k] : oreFixed(R.min, R.max, x, y);
   };
+  // 一个碎片堆能拾取几份（不是碎片堆 = null）
+  C.shardLeft = function (s, x, y) {
+    if (!s.map.t[y] || s.map.t[y][x] !== 'shard') return null;
+    const k = y * s.map.w + x, R = D.RES;
+    return s.shardAmt && s.shardAmt[k] != null ? s.shardAmt[k] : oreFixed(R.shardMin, R.shardMax, x, y);
+  };
+  // 开局：给每座矿、每个碎片堆掷储量 / 拾取量（C.rand，结果入档）。为了公平，镜像位置（旋转 180°、左右翻、上下翻；方形地图再加两条对角线）
+  // 上同一种地形的格子取同一个值：对称地图上各方拿到的一样多，不对称的地图（战役）基本各掷各的。关掉碎片的对局不掷，随机数和以前一样
+  function oreRoll(s) {
+    if (!oreOn(s)) return;
+    const m = s.map, w = m.w, h = m.h, R = D.RES, done = {};
+    const kinds = { mine: [R.mine_.min, R.mine_.max, 'mineLeft'], shard: [R.shardMin, R.shardMax, 'shardAmt'] };
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const t = m.t[y][x], K = kinds[t], k = y * w + x;
+      if (!K || done[k]) continue;
+      const group = [[x, y]]; done[k] = 1;
+      for (let i = 0; i < group.length; i++) {
+        const [gx, gy] = group[i], img = [[w - 1 - gx, h - 1 - gy], [w - 1 - gx, gy], [gx, h - 1 - gy]];
+        if (w === h) img.push([gy, gx], [w - 1 - gy, h - 1 - gx]);
+        for (const [nx, ny] of img) { const nk = ny * w + nx; if (!done[nk] && m.t[ny][nx] === t) { done[nk] = 1; group.push([nx, ny]); } }
+      }
+      const v = K[0] + Math.floor(C.rand() * (K[1] - K[0] + 1)), store = s[K[2]] || (s[K[2]] = {});
+      for (const [gx, gy] of group) store[gy * w + gx] = v;
+    }
+  }
+  C.oreRoll = oreRoll; // 测试和地图工具用：给手搭的局面补掷一次
+  // 采完的矿变成普通山地：不再是建筑，没有收入和归属，不能占领；站在上面的单位留在原地，按山地算。
+  // 事件 { type: 'mineGone', x, y, player: 原来的主人 }，界面据此重画这一格并提示一句
+  function mineGone(s, x, y) {
+    const m = s.map, was = m.owner[y][x];
+    m.t[y][x] = 'mountain'; m.owner[y][x] = 0; m.cap[y][x] = 20;
+    if (s.mineLeft) delete s.mineLeft[y * m.w + x];
+    visCache.delete(s); seaCache.delete(m.t);
+    (s.events || (s.events = [])).push({ type: 'mineGone', x, y, player: was });
+  }
   // 回合开始：己方的矿产出
   function oreTurnStart(s, p) {
     if (!oreOn(s)) return;
-    // 每座矿每 D.RES.mine_.every 回合产出 amount 份（零头记在 s.oreFrac 里攒着），每家最多算 cap 座；产完的矿不算
+    // 每座矿每 D.RES.mine_.every 回合产出 amount 份（零头记在 s.oreFrac 里攒着），占几座算几座；产完的矿不算
     const R = D.RES.mine_, m = s.map, live = [];
-    for (let y = 0; y < m.h; y++) for (let x = 0; x < m.w; x++) if (m.t[y][x] === 'mine' && m.owner[y][x] === p && C.mineLeft(s, x, y) > 0) live.push([x, y]);
-    const mines = Math.min(R.cap || Infinity, live.length);
+    for (let y = 0; y < m.h; y++) for (let x = 0; x < m.w; x++) if (m.t[y][x] === 'mine' && m.owner[y][x] === p) {
+      const l = C.mineLeft(s, x, y);
+      if (l > 0) live.push([x, y]); else if (!s.camp) mineGone(s, x, y); // 旧存档里已经采完的矿：现在才变山
+    }
+    const mines = live.length;
     if (!mines) return;
     const fr = s.oreFrac || (s.oreFrac = [0]);
     while (fr.length <= nP(s)) fr.push(0); // 不留空位：存档往返后要逐字段相同
     const acc = (fr[p] || 0) + mines * R.amount / R.every;
     let n = Math.floor(acc + 1e-9);
     fr[p] = acc - n;
-    if (R.total) { // 从剩得最多的矿里扣（一样多时按格子顺序），扣不出来的就不产
+    { // 轮流从每座矿里扣（剩得多的先扣，一样多时按格子顺序），扣不出来的就不产；扣到 0 的矿记下来
+      const order = live.map(([x, y]) => [x, y, C.mineLeft(s, x, y)]).sort((a, b) => b[2] - a[2]);
       let got = 0;
-      for (let i = 0; i < n; i++) {
-        let best = null, bl = 0;
-        for (const [x, y] of live) { const l = C.mineLeft(s, x, y); if (l > bl) { bl = l; best = [x, y]; } }
-        if (!best) break;
-        (s.mineLeft || (s.mineLeft = {}))[best[1] * m.w + best[0]] = bl - 1; got++;
+      for (let i = 0, miss = 0; got < n && miss < order.length; i++) {
+        const c = order[i % order.length];
+        if (c[2] <= 0) { miss++; continue; }
+        miss = 0; c[2]--; got++;
+        (s.mineLeft || (s.mineLeft = {}))[c[1] * m.w + c[0]] = c[2];
       }
       n = got;
+      if (n > 0) { oreAdd(s, p, n); s.events.push({ type: 'ore', player: p, amount: n, total: s.ore[p] }); }
+      if (!s.camp) for (const c of order) if (c[2] <= 0) mineGone(s, c[0], c[1]); // 战役里不变山：关卡目标要占这些矿
     }
-    if (n > 0) { oreAdd(s, p, n); s.events.push({ type: 'ore', player: p, amount: n, total: s.ore[p] }); }
   }
   // 陆上单位停在碎块上：拾取，这一格变成荒地。返回拾到多少（0 = 没有）
   function orePickup(s, u) {
     const m = s.map;
     if (m.t[u.y][u.x] !== 'shard' || !oreOn(s) || !(u.owner > 0) || D.UNITS[u.type].air || D.UNITS[u.type].ship) return 0;
-    const n = D.TERRAIN.shard.gain || D.RES.shardGain;
+    const n = C.shardLeft(s, u.x, u.y);
+    if (s.shardAmt) delete s.shardAmt[u.y * m.w + u.x];
     m.t[u.y][u.x] = 'shard_used'; visCache.delete(s); // 留下一个空坑（等同荒地）
     oreAdd(s, u.owner, n);
     (s.events || (s.events = [])).push({ type: 'pickup', player: u.owner, x: u.x, y: u.y, amount: n, total: s.ore[u.owner] });
     return n;
   }
-  // 用这种资源加速研究：投入 n 份，每份换一笔研究点，下个回合开始时和经费的点数一起到账（科技仍然只在回合开始时完成）。
-  // 每回合最多 D.RES.boostMax 份。返回实际投了几份
-  C.boostInfo = function (s, p) {
-    if (!oreOn(s) || !techOn(s)) return { pts: 0, left: 0, have: 0, ok: false, why: tr('这一局不能这样做') };
-    const t = techGet(s, p), left = Math.max(0, D.RES.boostMax - (t.boost || 0)), have = oreHave(s, p);
-    const why = p !== s.turn ? tr('只能在己方回合投入') : !left ? tr('本回合已经投满了') : !have ? tr('{res}不足', { res: D.RES.name }) : '';
-    return { pts: Math.round(D.RES.boostPts * C.techScale(s)), left, have, ok: !why, why };
-  };
-  C.boostResearch = function (s, p, n) {
-    const info = C.boostInfo(s, p);
-    if (!info.ok) return 0;
-    const k = Math.max(0, Math.min(n | 0 || 1, info.left, info.have));
-    if (!k) return 0;
-    const t = techMut(s, p);
-    s.ore[p] -= k; t.boost = (t.boost || 0) + k; rpAdd(s, p, k * info.pts); // 研究点当场进池子
-    return k;
-  };
+  // 击毁敌方的强化单位：击毁方立即得到它强化价的一半（向上取整）；运输单位里搭载的强化单位各自算。被击毁方什么都不收回。
+  // 友方之间、没有击毁方（自然涨潮淹掉的）、关掉碎片时不算。记一条 s.events（type: 'bounty'），r 上记 oreGain / oreTo
+  function oreBounty(s, dead, by, r) {
+    if (!oreOn(s) || !by || !(by.owner > 0) || !C.isEnemy(s, dead.owner, by.owner)) return 0;
+    let n = 0;
+    const add = u => { const k = u.ore ? (D.UNITS[u.type] && D.UNITS[u.type].ore) || 0 : 0; n += Math.ceil(k / 2); (u.cargo || []).forEach(add); };
+    add(dead);
+    if (!n) return 0;
+    oreAdd(s, by.owner, n);
+    (s.events || (s.events = [])).push({ type: 'bounty', player: by.owner, x: dead.x, y: dead.y, unit: dead.type, amount: n, total: s.ore[by.owner] });
+    if (r) { r.oreGain = (r.oreGain || 0) + n; r.oreTo = by.owner; }
+    return n;
+  }
 
   C.newGame = function (def, opts) {
     opts = opts || {};
@@ -1013,6 +1053,7 @@
     if (opts.aiTech) s.aiTech = opts.aiTech.slice(); // 电脑的研究打法（下标 = 阵营编号）：'none' | 'balanced' | 'heavy'
     s.techK = def.techK > 0 ? def.techK : (D.TECH_K && D.TECH_K[def.name]) || autoTechK(s);
     s.events = [];
+    oreRoll(s); // 每座矿的储量、每个碎片堆的拾取量
     C.startTurn(s);
     return s;
   };
@@ -1805,6 +1846,7 @@
     if (C.onKill) C.onKill(s, dead, by); // 评分统计（rank.js）：谁的单位被谁击毁
     campOnKill(s, dead);
     C.removeUnit(s, dead);
+    oreBounty(s, dead, by, r); // 击毁敌方的强化单位：拿到它强化价的一半
     if (!dead.revived) { // 每个阵营最近阵亡的单位（军医的技能要用）；被救回来过的不再记
       (s.lost || (s.lost = {}))[dead.owner] = { type: dead.type, day: s.day };
       if (s.tech) { const q = s.lostQ || (s.lostQ = {}); q[dead.owner] = [{ type: dead.type, day: s.day }].concat(q[dead.owner] || []).slice(0, 2); } // 最近两个（急救 · 极）
@@ -2884,7 +2926,8 @@
         const o = occ[pr.i];
         if (o && o !== u && !C.isEnemy(s, p, o.owner)) continue;
         let c = Math.ceil(d / mp) + Math.ceil(20 / cp) - 1;
-        c -= pr.t === 'mine' ? A.planMine + (ctx.oreOn ? A.planOre : 0) : pr.t === 'factory' || pr.t === 'airport' || pr.t === 'port' ? A.planProd : pr.t === 'tower' ? (nearFront(ctx, pr) ? A.planTower : 0) : pr.t === 'lab' && techOn(s) ? A.planLab : 0;
+        c -= pr.t === 'mine' ? A.planMine + (ctx.oreOn ? A.planOre * (C.mineLeft(s, pr.i % w, (pr.i - pr.i % w) / w) || 0) / 7.5 : 0) : // 矿的碎片按剩余量算（7.5 份算一倍）
+           pr.t === 'factory' || pr.t === 'airport' || pr.t === 'port' ? A.planProd : pr.t === 'tower' ? (nearFront(ctx, pr) ? A.planTower : 0) : pr.t === 'lab' && techOn(s) ? A.planLab : 0;
         if (ctx.goal && ctx.goal[pr.i]) c -= A.planGoal; // 战役的目标建筑：和司令部一样要紧 // 雷达塔只管周围 5 格：离敌人近的才值得先占
         if (pr.owner) c += A.planFoe + fb[pr.owner] * 0.2; // 敌人的建筑有人守，往后排
         pairs.push([c + (u.type === 'mech' ? 0.5 : 0), u.id, pr.i]);
@@ -3031,7 +3074,7 @@
     aheadRatio: 1.3, aheadDay: 5, crushRatio: 2.5, crushDay: 12, // 兵力是对手的多少倍、第几天以后算“占优”
     decapR: 3, decapVal: 500, decapTurns: 3, decapW: 9, decapDays: 2, // 斩首：敌方司令部周围几格内兵力不到多少、己方步兵类几回合内能到，就直取司令部
     softCover: 40, dangerSoft: 0.35, coverUnitW: 0.35, coverUnitBase: 1.2, flmNear: 12, // 投弹手、喷火兵、狙击手：更爱站掩体、更怕挨打；对面躲在掩体里的步兵越多越值得造
-    holdCover: 0, auraW: 40, shardW: 1500, oreKeep: 6, oreWant: 4, oreCore: 3, oreSpare: 5, oreIdle: 8, oreWorth: 1.3, eliteW: 1.35, eliteFoot: 0.6, rpCap: 5, buyMin: 200, planW: 8, planMine: 1.5, planOre: 1.5, planProd: 1, planTower: 0.5, planLab: 0.7, planGoal: 3, planFoe: 1.5,
+    holdCover: 0, auraW: 40, shardW: 1500, oreWant: 4, oreCore: 3, oreSpare: 5, oreIdle: 8, oreWorth: 1.3, eliteW: 1.35, eliteFoot: 0.6, rpCap: 5, buyMin: 200, planW: 8, planMine: 1.5, planOre: 1.5, planProd: 1, planTower: 0.5, planLab: 0.7, planGoal: 3, planFoe: 1.5,
     noise: 8, buildLo: 0.7, buildHi: 1.3, styleOn: true, footMax: 6, footLate: 3, focusKill: 0.15, killBonus: 0.3,
     freshFrac: 0.6, stormMin: 3, richPer: 1200, richMin: 1,
     waitDng: 0, comboW: 0, comboMax: 4, comboNeed: 0.95, comboLoss: 1500, // 高手的集火：凑得出击杀的目标加多少分（× 目标造价）、最多几个人凑、伤害要凑够目标 HP 的几成、为凑击杀最多亏多少
@@ -3089,8 +3132,6 @@
     let want = ls[0].id;
     for (const x of ls) if (x.cost <= inc * (x.id === 'low' ? AITECH.lowMax : share)) want = x.id;
     if (want !== t.fund) return { type: 'fund', level: want };
-    // 第二种资源有富余（留够强化建造的）：投进研究
-    if (oreHave(s, p) > A.oreKeep && C.boostInfo(s, p).ok) return { type: 'boost', n: 1 };
     return null;
   }
   function aiNext0(s) {
@@ -3135,7 +3176,6 @@
     const out = { path: a.path || null, trapped: false, result: null };
     if (a.type === 'research') out.result = C.research(s, s.turn, a.id);
     else if (a.type === 'fund') out.result = C.setFund(s, s.turn, a.level);
-    else if (a.type === 'boost') out.result = C.boostResearch(s, s.turn, a.n || 1);
     else if (a.type === 'power') C.usePower(s, s.turn);
     else if (a.type === 'build') out.result = C.build(s, a.x, a.y, a.unit, a.ore ? { ore: true } : null);
     else if (a.type === 'unit') {
@@ -3223,7 +3263,7 @@
       // 敌对司令部：平时排在后面；有步兵正在去斩首时，其余部队跟过去掩护
       // 兵力碾压时（ai.crush）全军直扑主攻对象的司令部，别在外围磨蹭
       // 缺第二种资源时，侦察车和摩托兵专门去捡碎片堆（别的陆上单位只是顺路捡）
-      if (ctx.oreOn && ctx.shards.length && (u.type === 'rec' || u.type === 'bik') && oreHave(s, p) < A.oreWant) for (const k of ctx.shards) if (full.dist[k] < INF) goals.push([k, full.dist[k], -2]);
+      if (ctx.oreOn && ctx.shards.length && (u.type === 'rec' || u.type === 'bik') && oreHave(s, p) < A.oreWant) for (const k of ctx.shards) if (full.dist[k] < INF) goals.push([k, full.dist[k], -1 - C.shardLeft(s, k % w, (k - k % w) / w) / 2]); // 份数多的先去
       if (ctx.goal) for (const k in ctx.goal) { const o = m.owner[(k - k % w) / w][k % w]; if (o !== p && teamOf(s, o) !== teamOf(s, p)) goals.push([+k, full.dist[+k], -1]); } // 战役的目标建筑：当成敌方司令部那样去抢
       for (const q of C.enemiesOf(s, p)) if (ctx.hq[q] >= 0) goals.push([ctx.hq[q], full.dist[ctx.hq[q]], (decapOn(ctx.hq[q]) ? -1 : ai.crush && (q === ai.focus || !ai.focus) ? 0 : 4 - (ruleOf(s, q).stealth ? A.stealthHq : 0)) + fb[q]]);
       // 对手会潜行：去它建筑周围、它的兵消失的地方贴着林子搜（侦察车、喷火兵、步兵优先；新手不会）
@@ -3408,7 +3448,7 @@
       const po = m.owner[y][x], own = po === p, ally = po > 0 && !own && !C.isEnemy(s, p, po);
       const prod = terr === 'factory' || terr === 'airport' || terr === 'port';
       if (stealthy && HIDE[terr] && !U.air) pos += A.hideW;
-      if (terr === 'shard' && !U.air && ctx.oreOn) pos += A.shardW; // 顺路把碎块捡了
+      if (terr === 'shard' && !U.air && ctx.oreOn) pos += A.shardW * C.shardLeft(s, x, y) / 2; // 顺路把碎块捡了（按这一堆的实际份数，2 份算一倍）
       if (U.range && ctx.tower[p] && auraAtk(s, { owner: p, x, y }) > 0) pos += A.auraW; // 己方雷达塔的范围里：攻击有加成，略偏好 // 潜行指挥官：往树林、废墟里钻
       if (emptyLander) pos += terr === 'beach' ? 800 : terr === 'port' ? 300 : 0; // 空登陆艇靠在沙滩或港口等人上船
       else if (prod && own && !(retreat && repairSpot(s, u, x, y))) pos -= 1500; // 别堵自家兵工厂
@@ -3758,7 +3798,7 @@
   // (x,y) 上除了 skip 以外有没有别的单位
   C.unitAt2 = function (s, x, y, skip) { for (const o of s.units) if (o !== skip && o.x === x && o.y === y) return o; return null; };
   // 下面这些都算“下一个动作”：一调就把可撤回的记录丢掉（造兵和移动会在做完以后记上自己的）
-  for (const name of ['moveUnit', 'attack', 'capture', 'load', 'unload', 'join', 'sell', 'launchSilo', 'build', 'research', 'unlockTech', 'setFund', 'boostResearch', 'usePower', 'endTurn', 'resign', 'ambushShot']) {
+  for (const name of ['moveUnit', 'attack', 'capture', 'load', 'unload', 'join', 'sell', 'launchSilo', 'build', 'research', 'unlockTech', 'setFund', 'usePower', 'endTurn', 'resign', 'ambushShot']) {
     const f = C[name];
     if (typeof f !== 'function') continue;
     C[name] = function (s) { if (s && typeof s === 'object') UNDO.delete(s); return f.apply(this, arguments); };
