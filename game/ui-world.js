@@ -108,7 +108,7 @@
     function draw(now) {
       const art = ART(), dpr = root.devicePixelRatio || 1, Wd = innerWidth, Hd = innerHeight;
       if (cv.width !== Math.round(Wd * dpr) || cv.height !== Math.round(Hd * dpr)) { cv.width = Math.round(Wd * dpr); cv.height = Math.round(Hd * dpr); clampCam(cam); }
-      if (camTo) { const u = Math.min(1, (now - camTo.t0) / camTo.ms), e = u < 0.5 ? 2 * u * u : 1 - 2 * (1 - u) * (1 - u); cam = { x: camTo.fx + (camTo.x - camTo.fx) * e, y: camTo.fy + (camTo.y - camTo.fy) * e, z: camTo.fz + (camTo.z - camTo.fz) * e }; if (u >= 1) camTo = null; }
+      if (camTo) { const u = Math.min(1, (now - camTo.t0) / camTo.ms), e = u < 0.5 ? 2 * u * u : 1 - 2 * (1 - u) * (1 - u); const z = camTo.fz + (camTo.z - camTo.fz) * e, q = camTo.fz / z * (1 - e); cam = { x: camTo.x - (camTo.x - camTo.fx) * q, y: camTo.y - (camTo.y - camTo.fy) * q, z };   /* 边推近边平移：目标点在屏幕上走直线到中心（位置和缩放各自线性插值时，竖屏上目标会先滑出屏幕再回来） */ if (u >= 1) camTo = null; }
       c.setTransform(dpr, 0, 0, dpr, 0, 0); c.fillStyle = '#0a1422'; c.fillRect(0, 0, Wd, Hd); c.imageSmoothingEnabled = true; c.imageSmoothingQuality = 'high';
       const o = toS(0, 0), mw = size()[0] * k(), mh = size()[1] * k(), layer = (L, a) => { if (!L || !L.img.naturalWidth || a <= 0) return; c.globalAlpha = a; c.drawImage(L.img, o[0], o[1], mw, mh); c.globalAlpha = 1; };
       if (art) {

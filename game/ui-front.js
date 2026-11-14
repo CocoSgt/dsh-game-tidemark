@@ -71,7 +71,7 @@
     .mrow .mid { padding:14r; display:flex; cursor:pointer; } .mrow canvas { display:block; border-radius:6r; }
     .mrow .nb { position:absolute; top:50%; transform:translateY(-50%); padding:10r; opacity:.5; cursor:pointer; } .mrow .nb.l { left:-170r; } .mrow .nb.r { right:-170r; }
     .mrow .side.l { left:calc(50% - 640r); } .mrow .side.r { right:calc(50% - 640r); }
-    .mblurb { flex:none; min-height:76r; max-width:1560r; padding:8r 0; display:flex; align-items:center; text-align:center; font-size:max(20px,28r); line-height:1.4; color:var(--txt); } .mblurb i { font-style:normal; color:var(--mut); font-size:max(20px,26r); }
+    .mblurb { flex:none; min-height:76r; max-width:1560r; padding:8r 24r; display:flex; align-items:center; text-align:center; font-size:max(20px,28r); line-height:1.4; color:var(--txt); } .mblurb i { font-style:normal; color:var(--mut); font-size:max(20px,26r); }
     /* 谁来打 */
     .seats { flex:1; min-height:0; display:flex; gap:36r; align-items:center; justify-content:center; width:100%; }
     .seat { width:400r; padding:30r 26r 26r; display:flex; flex-direction:column; align-items:center; gap:14r; cursor:pointer; opacity:.9; } .seat.nav.focus { background:linear-gradient(var(--pc), var(--pcd)); color:var(--txt); opacity:1; transform:scale(1.07); box-shadow:inset 0 0 0 6r var(--gold), inset 0 12r 0 rgba(255,255,255,.2), 0 0 0 5r var(--line), 0 14r 0 rgba(0,0,0,.45); text-shadow:0 3r 0 rgba(0,0,0,.45); }
@@ -134,7 +134,7 @@
     .scard .sb { display:flex; gap:8r; min-width:0; } .scard .sv, .scard .st { height:max(28px,40r); padding:0 14r; border-radius:20r; display:flex; align-items:center; font-size:max(20px,24r); font-weight:900; line-height:1; white-space:nowrap; cursor:pointer; }
     .scard .sv { display:block; line-height:max(28px,40r); min-width:0; overflow:hidden; text-overflow:ellipsis; background:rgba(10,14,28,.6); color:var(--gold2); box-shadow:inset 0 0 0 3r rgba(255,255,255,.28); } .scard .st { flex:none; background:var(--gold); color:var(--ink); text-shadow:none; }
     .cosel .ctop { position:absolute; left:20r; top:256r; z-index:2; width:auto; height:auto; padding:0; flex-direction:column; align-items:flex-start; gap:8r; } .cosel .ctop .tabs { flex-direction:column; align-items:stretch; gap:8r; } .cosel .ctop .tab { height:64r; padding:0 18r 0 12r; font-size:max(20px,28r); } .cosel .ctop .tab.on { transform:translateX(12r); } .cosel .ctop .kcw { margin-left:14r; }
-    .cosel .info { top:256r; } .cosel .emb { left:150r; }
+    .cosel .info { top:256r; } .cosel .emb { left:150r; } body[data-dev=touch].small:not(.narrow) .cosel .ctop .tab { min-height:32px; }
     body.narrow .cosel .top .steps { gap:4r; } body.narrow .cosel .top .step { white-space:nowrap; padding:0 10r; gap:6r; } body.narrow .cosel .hsel { width:92r; height:92r; } body.narrow .cosel .heads { gap:12r; }
     body.narrow .cosel .sstrip { left:16r; right:16r; top:128r; height:auto; flex-wrap:wrap; gap:10r; } body.narrow .scard { flex:1 1 40%; max-width:none; padding:8r 10r; gap:10r; } body.narrow .scard .hd { width:76r; height:76r; } body.narrow .cosel.s3 .scard .hd, body.narrow .cosel.s4 .scard .hd { width:56r; height:56r; font-size:40r; } body.narrow .cosel.s3 .scard, body.narrow .cosel.s4 .scard { gap:6r; padding:8r 6r; } body.narrow .cosel.s3 .scard .sb, body.narrow .cosel.s4 .scard .sb { gap:4r; } body.narrow .cosel.s3 .scard .sv, body.narrow .cosel.s3 .scard .st, body.narrow .cosel.s4 .scard .sv, body.narrow .cosel.s4 .scard .st { padding:0 7r; }
     body.narrow .cosel .ctop { left:0; right:0; top:242r; width:100%; flex-direction:row; justify-content:center; } body.narrow .cosel .ctop .tabs { flex-direction:row; gap:4r; } body.narrow .cosel .ctop .tab { padding:0 7r; gap:5r; } body.narrow .cosel .ctop .tab .ic { width:38r; height:38r; } body.narrow .cosel .ctop .tab.on { transform:none; } body.narrow .cosel .ctop .kcw { display:none; }
@@ -176,14 +176,14 @@
     const GLOBE = '<svg viewBox="0 0 24 24" fill="none" stroke="#f4efe0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3.4 3.2 3.4 14.8 0 18M12 3c-3.4 3.2-3.4 14.8 0 18"/></svg>';
     function langPick() {
       if (!canLang() || $('langPick')) return null;
-      const I = I18N(), cur = I.auto ? 'auto' : I.lang;
+      const I = I18N(), cur = I.auto ? 'auto' : I.lang, fromTitle = !!(Nav.top() && Nav.top().el.id === 'title');   // 从标题右上角打开的：换完回到标题，不进设置
       let det = ''; try { det = I.detect ? langName(I.detect()) : ''; } catch (e) { }
       const item = (id, text) => `<button class="nav item${id === 'auto' ? ' auto' : ''}" data-lang="${esc(id)}">${esc(text)}${id === cur ? '<span class="c">✓</span>' : ''}</button>`;
       const scr = Kit.screen({
         id: 'langPick', dim: true, pop: true, flow: true, hints: [['a', '确定'], ['b', '返回']],
         html: `<div class="lgp pn"><h2>${esc(T('语言'))} / Language</h2><div class="ls">${item('auto', det ? T('自动（{name}）', { name: det }) : T('自动'))}${I.list().map(l => item(l.id, l.name)).join('')}</div></div>`,
       });
-      scr.el.querySelectorAll('[data-lang]').forEach(b => { b.onclick = () => { const id = b.dataset.lang; sfx.ok(); if (id === cur) return scr.close(); G.switchLang(id); }; });   // 选了现在这一项：只关掉，不重载
+      scr.el.querySelectorAll('[data-lang]').forEach(b => { b.onclick = () => { const id = b.dataset.lang; sfx.ok(); if (id === cur) return scr.close(); G.switchLang(id, fromTitle ? 'title' : ''); }; });   // 选了现在这一项：只关掉，不重载
       Nav.focus(scr.el.querySelector(`[data-lang="${cur}"]`) || scr.el.querySelector('[data-lang]'));
       return scr;
     }

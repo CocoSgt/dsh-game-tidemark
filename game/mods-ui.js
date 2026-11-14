@@ -16,6 +16,8 @@
     '#awmods-tag{display:none;position:fixed;right:calc(14 * var(--r,1px));bottom:calc(12 * var(--r,1px));z-index:12;font:800 max(12px,calc(18 * var(--r,1px)))/1 var(--font,system-ui,sans-serif);color:#fff0d6;padding:calc(9 * var(--r,1px)) calc(14 * var(--r,1px)) calc(12 * var(--r,1px));cursor:pointer;user-select:none;-webkit-user-select:none;white-space:nowrap;opacity:.82;' +
     'background:rgba(40,12,10,.86);border:0 solid transparent;border-image:var(--sk-cd, none) 32 32 38 32 fill / calc(12 * var(--r,1px)) calc(12 * var(--r,1px)) calc(14 * var(--r,1px)) calc(12 * var(--r,1px)) / 0 stretch}' +
     '#awmods-tag:hover{opacity:1}#awmods-tag.warn{color:#ffd470}' +
+    // 有钢板皮肤时整块就是那张深色小牌（border-image 的 fill 画满中间）：底色去掉，不然方形的暗底会从牌子的斜角外面露出来
+    '#awmods-tag.sk{background:none;opacity:1}#awmods-tag.sk:hover{filter:brightness(1.15)}' +
     'body:has(#title):not(:has(.scr:not(#title))) #awmods-tag{display:block}' +
     '.modline{margin:calc(10 * var(--r,1px)) calc(8 * var(--r,1px)) 0;text-align:center;font-size:max(20px,calc(24 * var(--r,1px)));font-weight:800;color:#f0d8c8;cursor:pointer}.modline.warn{color:#ffd470}.modline::after{content:" ›"}' +
     '.modp{margin:auto;width:calc(1000 * var(--r,1px));max-width:94vw;max-height:calc(100% - 24 * var(--r,1px));padding:calc(24 * var(--r,1px)) calc(34 * var(--r,1px)) calc(26 * var(--r,1px));display:flex;flex-direction:column;gap:calc(12 * var(--r,1px));' +
@@ -82,6 +84,7 @@
     const el = doc.createElement('div'), bad = ls.filter(m => m.state !== 'ok').length;
     el.id = 'awmods-tag';
     if (bad) el.className = 'warn';
+    try { if (root.getComputedStyle(doc.documentElement).getPropertyValue('--sk-cd').trim()) el.classList.add('sk'); } catch (e) { /* 没有皮肤：保留纯色底 */ }
     el.textContent = tagText();
     el.title = T('点击查看扩展列表');
     el.addEventListener('click', e => { e.stopPropagation(); open(); });

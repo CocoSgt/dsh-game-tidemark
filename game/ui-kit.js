@@ -136,20 +136,21 @@
   body[data-dev=touch] #hints { height:auto; min-height:max(56px,76r); padding:6px 10px; } body[data-dev=touch] #hints .bt { min-height:44px; min-width:44px; justify-content:center; }
   /* 手机竖屏：面板改成单栏，超出的往下滚 */
   body.narrow #hints { left:2vw; right:2vw; transform:none; flex-wrap:wrap; height:auto; padding:6px 10px; background:none; box-shadow:none; } body.narrow #hints.corner { left:auto; }
-  body.narrow .scr { padding-bottom:max(64px,120r); } body.small .scr { padding-bottom:76px; } body.narrow.hint-on #hudI { bottom:max(72px,150r); }
+  body.narrow .scr { padding-bottom:max(64px,120r); } body.small .scr { padding-bottom:76px; } body.narrow.hint-on #hudI { bottom:max(72px,150r,calc(var(--hintTop, 0px) + 8px)); }
   body.narrow .cols, body.narrow .build, body.narrow .cxg, body.narrow .cxr, body.narrow .tech, body.narrow .statw, body.narrow .cxw { flex-direction:column; align-items:stretch; justify-content:flex-start; overflow-y:auto; padding-left:24r; padding-right:24r; gap:20r; }
   body.narrow .olist, body.narrow .odesc, body.narrow .build .ls, body.narrow .build .cd, body.narrow .cxg .grid, body.narrow .cxg .card, body.narrow .cxr .ls, body.narrow .cxr .pg, body.narrow .tech .rt, body.narrow .tech .lf, body.narrow .stcard, body.narrow .pager, body.narrow .detail, body.narrow .pause { width:auto; max-width:100%; flex:none; align-self:stretch; }
   body.narrow .pager, body.narrow .detail, body.narrow .pause { margin:auto 20r; } body.narrow .build .ls, body.narrow .cxr .ls { max-height:38vh; } body.narrow .cxg .grid { max-height:34vh; grid-template-columns:repeat(6, 1fr); }
   body.narrow .seats { flex-wrap:wrap; gap:20r; align-content:center; } body.narrow .seat { width:340r; padding:18r 14r; } body.narrow .cxhome { grid-template-columns:repeat(2, 340r); gap:20r; } body.narrow .cxt { height:250r; }
   body.narrow .logo { font-size:150r; margin-top:120r; } body.narrow .mrow .nb { display:none; } body.narrow .mrow .side.l { left:0; } body.narrow .mrow .side.r { right:0; } body.narrow .mhead { flex-wrap:wrap; justify-content:center; height:auto; } body.narrow .mhead .nm { font-size:70r; }
   body.narrow .over { flex-direction:column; align-items:center; padding:20r; overflow-y:auto; } body.narrow .over .ps img { height:520r; } body.narrow .over .rt { min-width:0; } body.narrow .over .big { font-size:150r; }
-  body.narrow .top { padding:0 90r 0 10r; } body.narrow .step { padding:0 14r; height:52r; } body.narrow .tiles { gap:8r; } body.narrow .tile { min-width:120r; padding:8r 10r; }
+  body.narrow .top { padding:0 calc(max(48px,72r) + 30r) 0 10r; } body.narrow .step { white-space:nowrap; } body.narrow .step:not(.on):has(> b) > .sn { display:none; } body.narrow .step { padding:0 14r; height:52r; } body.narrow .tiles { gap:8r; } body.narrow .tile { min-width:120r; padding:8r 10r; }
   body.narrow .ucard .hdx { flex-wrap:wrap; } body.narrow .keys { grid-template-columns:1fr; } body.narrow .tline { flex-wrap:wrap; } body.narrow .tline .ln { width:100%; } body.narrow .tnode { min-height:90r; }
   body.narrow .tfund { flex-wrap:wrap; white-space:normal; }
   #snd { position:fixed; right:20r; top:20r; z-index:45; width:max(48px,72r); height:max(48px,72r); border-radius:16r; display:flex; align-items:center; justify-content:center; background:var(--panel); border:4r solid var(--line); box-shadow:inset 0 4r 0 var(--hi), 0 6r 0 rgba(0,0,0,.4); cursor:pointer; }
   #snd svg { width:60%; height:60%; } #snd:hover { background:var(--panel2); }
   /* 竖排的设置行：一行一项，左右改值；右边一块说明 */
   .olist { display:flex; flex-direction:column; width:900r; max-height:100%; overflow:hidden; }
+  /* 开局“规则”一步：放不下（手机横屏）时规则列表在自己框里上下滚，不被上下裁掉 */ #wzRules .cols > div:first-child { display:flex; flex-direction:column; max-height:100%; min-height:0; } #wzRules .olist { flex:0 1 auto; min-height:0; overflow-y:auto; overscroll-behavior:contain; scrollbar-width:none; } #wzRules .olist::-webkit-scrollbar { display:none; }
   .orow { display:flex; align-items:center; min-height:max(64px,80r); padding:0 26r 0 64r; margin:5r 0; border-radius:12r; background:rgba(14,18,32,.55); font-size:max(22px,34r); white-space:nowrap; }
   .orow .v { margin-left:auto; display:flex; align-items:center; gap:16r; color:var(--gold); font-weight:900; } .orow .v i { font-style:normal; font-size:max(20px,27r); opacity:.6; padding:8r 10r; } .orow.focus .v i { opacity:1; }
   .orow.focus .v { color:var(--ink); } .orow.focus::before { content:""; position:absolute; left:20r; top:50%; margin-top:-16r; border:16r solid transparent; border-left:24r solid var(--ink); border-right:0; animation:bob .5s ease-in-out infinite alternate; }
@@ -338,13 +339,19 @@
   document.addEventListener('mouseover', e => { const b = e.target.closest && e.target.closest('.nav'); if (b && !b.disabled && Kit.dev === 'mouse') Nav.focus(b); });
   document.addEventListener('mousedown', e => { if (e.target.closest && e.target.closest('button')) e.preventDefault(); });
   // 触屏没有悬停：第一下只选中，第二下才确定
+  let downEl = null, downTouch = false;      // 这一下手指按在哪个元素上（防“幽灵点击”用）
   document.addEventListener('pointerdown', e => {
+    downEl = e.target; downTouch = e.pointerType === 'touch' || e.pointerType === 'pen';
     Kit.setDev(e.pointerType === 'touch' || e.pointerType === 'pen' ? 'touch' : 'mouse');
     const b = e.target.closest && e.target.closest('.nav'); tapWas = b && b.classList.contains('focus') ? b : null;
     if (b && !b.disabled) Nav.focus(b);
   }, true);
   document.addEventListener('pointermove', e => { if (e.pointerType === 'mouse' && (e.movementX || e.movementY)) Kit.setDev('mouse'); }, true);
   document.addEventListener('click', e => {
+    // 触屏的“幽灵点击”：手指在地图上点一下（松手时就打开了造兵列表、行动菜单……），浏览器随后补发的 click 会落到刚弹出来、正好在手指底下的按钮上。
+    // 手指按下时不在这个按钮里 = 不是点它的，吞掉（按下的元素被重画掉了的不算）
+    const hit = e.isTrusted && downTouch && e.target.closest && e.target.closest('.nav, [data-a], button');
+    if (hit && downEl && downEl.isConnected && !hit.contains(downEl)) { e.stopPropagation(); e.preventDefault(); return; }
     const b = e.target.closest && e.target.closest('.nav');
     if (Kit.dev === 'touch' && b && b.dataset.tap2 != null && tapWas !== b) { e.stopPropagation(); e.preventDefault(); Kit.sfx.tick(); }
   }, true);
@@ -374,7 +381,11 @@
   let baseHints = [], hintKey = '';
   Kit.setHints = list => { baseHints = list || []; Kit.paintHints(); };
   Kit.cap = k => Kit.ptr() ? '' : (capsOf(Kit.dev)[k] || '');
-  Kit.paintHints = force => {
+  // 提示条上沿离屏幕底边多远（--hintTop）：手机竖屏上提示条会折成两行，底部信息条按它让位，不叠在一起
+  const markHints = () => { const bar = $('hints'); const off = !bar || bar.classList.contains('off'); const t = off ? 0 : Math.max(0, innerHeight - bar.getBoundingClientRect().top); document.documentElement.style.setProperty('--hintTop', Math.round(t) + 'px'); };
+  addEventListener('resize', () => setTimeout(markHints, 60));
+  Kit.paintHints = force => { const k0 = hintKey; paintHints0(force); if (force || hintKey !== k0) markHints(); };
+  const paintHints0 = force => {
     const bar = $('hints'); if (!bar) return;
     const t = Nav.top(); let list = t ? (typeof t.hints === 'function' ? t.hints() : t.hints) : baseHints;
     list = (list || []).filter(Boolean);
@@ -557,7 +568,7 @@
   Kit.tile = (val, label, icon) => `<div class="tile"><b>${icon || ''}${val}</b><span>${esc(label)}</span></div>`;
   Kit.stars = (n, max) => `<span class="stars">${'★'.repeat(n)}${max ? `<i>${'★'.repeat(Math.max(0, max - n))}</i>` : ''}</span>`;
   Kit.bar = (frac, cls) => `<span class="bar ${cls || ''}${frac >= 1 ? ' full' : ''}"><i style="width:calc(${Math.round(Math.max(0, Math.min(1, frac)) * 100)}% - ${frac > 0 ? 6 : 0} * var(--r))"></i></span>`;
-  Kit.steps = (names, cur) => `<div class="steps">${names.map((n, i) => `${i ? '<i>›</i>' : ''}<span class="step${i === cur ? ' on' : i < cur ? ' done' : ''}">${i < names.length - 1 ? `<b>${i < cur ? '✓' : i + 1}</b>` : ''}${esc(n)}</span>`).join('')}</div>`;
+  Kit.steps = (names, cur) => `<div class="steps">${names.map((n, i) => `${i ? '<i>›</i>' : ''}<span class="step${i === cur ? ' on' : i < cur ? ' done' : ''}">${i < names.length - 1 ? `<b>${i < cur ? '✓' : i + 1}</b>` : ''}<span class="sn">${esc(n)}</span></span>`).join('')}</div>`;
   const pct = v => (v > 0 ? '+' : '−') + Math.round(Math.abs(v) * 100) + '%';
   Kit.pct = pct;
   // 把一句话截成不超过 n 个字的一句（取第一句；还长就截断加省略号）

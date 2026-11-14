@@ -1467,7 +1467,7 @@
     if (Kit.ptr()) {
       // 鼠标：右下角一个“菜单”按钮；触屏再加“结束回合”“详情”。选路、选目标时给“取消 / 返回”
       const mine = human[S.turn] && !S.winner, touch = Kit.dev === 'touch';
-      Kit.setHints(mode === 'idle' && mine ? [unitAtV(cur.x, cur.y) && ['', touch ? '长按单位：查看范围和视野' : '按住右键：查看范围和视野'], undoOf() && ['undo', '撤回'], ['y', '菜单'], touch && ['end', '结束回合'], touch && ['x', '详情']] : mode === 'move' ? [['b', '取消']] : pick ? [touch && ['a', mode === 'target' ? '攻击' : mode === 'silo' ? '发射' : '卸载至此'], ['b', '返回']] : mode === 'inspect' ? [['b', '关闭范围和视野显示']] : []);
+      Kit.setHints(mode === 'idle' && mine ? [unitAtV(cur.x, cur.y) && ['', touch ? '长按单位：查看范围和视野' : '按住右键：查看范围和视野'], undoOf() && ['undo', '撤回'], ['y', '菜单'], touch && ['end', '结束回合'], touch && ['x', '详情']] : mode === 'move' ? [touch && aim && ['a', aim.moves ? '移动并攻击' : '攻击'], ['b', '取消']] : pick ? [touch && ['a', mode === 'target' ? '攻击' : mode === 'silo' ? '发射' : '卸载至此'], ['b', '返回']] : mode === 'inspect' ? [['b', '关闭范围和视野显示']] : []);
     } else Kit.setHints(pick || cfg.hints || now < hintUntil ? battleHints() : undoOf() ? [['undo', '撤回']] : []);   // 有能撤回的事：角上一个“撤回”的提示，做了下一个动作就消失
   }
   let hintUntil = 0;
@@ -1682,7 +1682,9 @@
           const i = e.y * w + e.x;
           if (!cs.has(i) || !unitSeen(e)) continue;
           if (C.isEnemy ? !C.isEnemy(S, q.owner, e.owner) : e.owner === q.owner) continue;
-          if (C.canHit ? C.canHit(S, q, e) : (D.DMG[q.type] && D.DMG[q.type][e.type] != null)) hs.add(i);
+          if (!(C.canHit ? C.canHit(S, q, e) : (D.DMG[q.type] && D.DMG[q.type][e.type] != null))) continue;
+          // 核心的 threatCells 是给电脑估威胁用的，把只能路过、停不下的格子（友军占着）也算成出手点；这里再核一遍：真有能站的格子才标红
+          if (standFor(e)) hs.add(i);
         }
         if (hs.size) hitSet = hs;
       }
@@ -2465,12 +2467,12 @@ let unlock = null; try { unlock = freeWin(win, lost); } catch (e) { console.erro
   // 重载前在 localStorage 记一个一次性标记（steel-tide.afterLang）：'game' = 重载后接着这一局（普通对局和战役关卡都走自动存档），并打开对局内的设置页；
   // 'title' = 回到标题、打开设置页。标记在启动流程末尾读取并清掉（见文件末尾的 afterLang）
   const LANG_FLAG = 'steel-tide.afterLang';
-  function switchLang(lang) {
+  function switchLang(lang, from) {
     const I = window.AWI18n; if (!I || typeof I.set !== 'function') return false;
     const was = I.lang, wasAuto = !!I.auto;
     try { I.set(lang); } catch (e) { console.error(e); return false; }
     if (I.lang === was && !!I.auto === wasAuto) return false;
-    let where = 'title';
+    let where = from === 'title' ? 'home' : 'title';   // home：在标题画面换的，重载后停在标题；title：在设置里换的，重载后回到设置
     if (S && !S.winner && mode !== 'title' && mode !== 'over' && !DEMO) {
       unstage();                               // 预演里摆到终点的单位先放回出发格，存下来的才是行动前的局面
       autosave(); if (loadSave()) where = 'game';
@@ -2485,6 +2487,7 @@ let unlock = null; try { unlock = freeWin(win, lost); } catch (e) { console.erro
   async function afterLang() {
     const w = lsGet(LANG_FLAG); if (!w) return;
     try { localStorage.removeItem(LANG_FLAG); } catch (e) { }
+    if (w === 'home') return;
     if (w.indexOf('world:') === 0) { try { if (Camp && Camp.select) Camp.select(w.slice(6) || undefined); } catch (e) { console.error(e); } return; }
     if (w !== 'game' || !loadSave()) { if (w === 'game' || w === 'title') openSettings(false); return; }
     const t = TURBO; TURBO = true;             // 接着上一局：不演开场转场和回合横幅，直接回到战场
@@ -2637,6 +2640,8 @@ let unlock = null; try { unlock = freeWin(win, lost); } catch (e) { console.erro
       if (e.pointerType === 'touch' && was !== cur.x + ',' + cur.y) return; // 触摸没有悬停：第一下选目标，第二下确认
     }
     if (mode === 'silo' && e.pointerType === 'touch' && was !== cur.x + ',' + cur.y) return;
+    // 触摸没有悬停：选路时第一下点到打得到的敌人只挑站位、显示伤害预估，第二下（或提示条上的“攻击”）才走过去打
+    if (mode === 'move' && e.pointerType === 'touch' && was !== cur.x + ',' + cur.y && aim && aim.t.x === t.x && aim.t.y === t.y) { sfx.tick(); return; }
     ok(true);
   }
   // 触屏：单指拖动 = 平移地图，双指捏合 = 缩放，轻点格子 = 光标 + 确定，长按格子 = 详情
